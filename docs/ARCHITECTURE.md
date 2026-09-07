@@ -1660,6 +1660,9 @@ bounded supporting-detail budget; aggregates use the complete digest, recent
 workout and exact-variant examples retain full calendar dates, and selection or
 text excerpts are disclosed. Current Program targets use the owner-scoped
 Program presentation and are explicitly retrieval-time future intent.
+After that read, the owner evidence revision must still match the digest;
+otherwise both projections are rebuilt once, then preparation fails without a
+partial report if the evidence boundary still cannot stabilize.
 Technical interruptions stay separate from training failure; coverage gaps and
 unknowns remain visible. Both the brief and complete report share the same AI
 review preamble, as does the period-specific Markdown training brief.

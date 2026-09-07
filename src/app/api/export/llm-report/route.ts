@@ -1,6 +1,8 @@
 import { renderAiTrainingBrief } from "@/lib/ai-training-brief";
 import { getActiveProgramPresentation } from "@/services/program-presentation";
 import { getDb } from "@/db";
+import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { sensitiveResponse } from "@/lib/http-security";
 import { buildLlmReadyTrainingReport } from "@/lib/llm-training-report";
 import { getRouteUser } from "@/lib/route-auth";
@@ -31,6 +33,13 @@ export async function GET(request: Request) {
           const digest = await buildTrainingDigest(db, user.id, null, now);
           if (brief) {
             const program = await getActiveProgramPresentation(db, user.id);
+            const finalOwner = await db.query.users.findFirst({
+              where: eq(users.id, user.id),
+              columns: { analysisEvidenceRevision: true },
+            });
+            if (!finalOwner || String(finalOwner.analysisEvidenceRevision) !== digest.reporting.evidenceRevision) {
+              continue;
+            }
             report = renderAiTrainingBrief(digest, program);
             break;
           }
