@@ -131,6 +131,24 @@ function workingOccurrenceFor(
 }
 
 describe("ExerciseCard", () => {
+  it("keeps unsupported loaded time blocked and explains recovery", () => {
+    const carry = { ...exercise, name: "Synthetic Carry", metricType: "distance_duration", loadType: "kettlebell", loadSemantics: "per_implement", sets: [], warmupSets: [] } as SessionExerciseData;
+    const occurrence = workingOccurrenceFor(carry, 0);
+    const html = renderToStaticMarkup(<ExerciseCard exercise={carry} historyRevision={0} progress={{
+        sessionExerciseId: carry.id, exerciseName: carry.name, total: 1, planned: 1,
+        extra: 0, workoutOnly: 0, performed: 0, plannedPerformed: 0, extraPerformed: 0,
+        workoutOnlyPerformed: 0, skipped: 0, abandoned: 0, pending: 1, legacyUnknown: 0,
+        completedWithoutResult: 0, status: "current",
+      }} expanded warmupResolved onToggle={vi.fn()}
+      plateConfigs={{}} incrementals={{}} unit="lb" activeOccurrence={occurrence} workingOccurrences={[occurrence]} isCurrentExercise
+      onPatch={vi.fn()} onQueueSet={async () => true} onRetrySet={async () => undefined} onDiscardSet={async () => undefined}
+      onSkipComplete={vi.fn()} onOpenCoach={vi.fn()} adjustIntent={null} onAdjustIntentChange={vi.fn()} />);
+    expect(html).toContain("This set has not been saved");
+    expect(html).toContain("Loaded time — each side");
+    expect(html).toContain("Technical or app issue");
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>[\s\S]*?Log set/);
+  });
+
   it("never replaces a valid controlled draft number with a non-finite value", () => {
     expect(parseFiniteDraftNumber("77", null)).toBe(77);
     expect(parseFiniteDraftNumber("", 77)).toBeNull();

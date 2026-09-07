@@ -110,7 +110,7 @@ test("keeps portable facts, AI packages, support diagnostics, Review, and Coach 
   await expect(
     page.getByRole("heading", { name: "Downloads & backup" }),
   ).toBeVisible();
-  await expect(page.getByText("Complete AI report", { exact: true })).toBeVisible();
+  await expect(page.getByText("AI training report", { exact: true })).toBeVisible();
   await expect(page.getByText("Training Brief", { exact: true })).toBeVisible();
   await expect(page.getByText("Recommended", { exact: true })).toBeVisible();
   await expect(
@@ -125,26 +125,31 @@ test("keeps portable facts, AI packages, support diagnostics, Review, and Coach 
   ).not.toBeVisible();
   await expect(page.getByText(/never sent anywhere by Repbook/i)).toBeVisible();
   const completeReportButton = page.getByRole("button", {
-    name: "Prepare report for copying",
+    name: "Prepare AI brief for copying",
     exact: true,
   });
   expect((await completeReportButton.boundingBox())?.height ?? 0)
     .toBeGreaterThanOrEqual(44);
   await completeReportButton.click();
-  await expect(page.getByText(/Complete report ready/)).toBeVisible();
+  await expect(page.getByText(/AI brief ready/)).toBeVisible();
   expect(await page.getByRole("link", { name: "Download complete report", exact: true }).evaluate((link) => link.scrollWidth <= link.clientWidth + 1)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("complete-report-ready.png"), animations: "disabled" });
-  await page.getByRole("button", { name: "Copy report", exact: true }).click();
+  await page.getByRole("button", { name: "Copy AI brief", exact: true }).click();
   await expect(
-    page.getByText("Complete report copied to your clipboard.", { exact: true }),
+    page.getByText("AI brief copied to your clipboard.", { exact: true }),
   ).toBeVisible();
   const copiedReport = await page.evaluate(
     () => (window as unknown as { __repbookClipboard?: string }).__repbookClipboard,
   );
   expect(copiedReport).toContain("# Instructions for the language model");
   expect(copiedReport).toContain("# Repbook training record");
-  expect(copiedReport).toContain("# Training brief");
+  expect(copiedReport).toContain("# AI training brief");
+  const { writeFile } = await import("node:fs/promises");
+  await writeFile(testInfo.outputPath("synthetic-ai-brief.md"), copiedReport!);
   expect(copiedReport).not.toContain(EMAIL);
+  expect(copiedReport).not.toContain("<repbook-retained-source-records>");
+  expect(copiedReport).toContain("Current Program — future intent");
+  expect(copiedReport).toContain("Technical/app issues");
   await expect
     .poll(() =>
       page.evaluate(
@@ -235,12 +240,12 @@ test("keeps portable facts, AI packages, support diagnostics, Review, and Coach 
 test("reports clipboard denial, keeps the prepared copy, and recovers from preparation failures", async ({ page }) => {
   await installClipboardHarness(page, "deny");
   await signIn(page);
-  await page.route("**/api/export/llm-report", (route) => route.fulfill({
+  await page.route("**/api/export/llm-report?view=brief", (route) => route.fulfill({
     contentType: "text/markdown", body: "# Synthetic complete report",
   }));
   await page.goto("/export");
-  await page.getByRole("button", { name: "Prepare report for copying", exact: true }).click();
-  const copy = page.getByRole("button", { name: "Copy report", exact: true });
+  await page.getByRole("button", { name: "Prepare AI brief for copying", exact: true }).click();
+  const copy = page.getByRole("button", { name: "Copy AI brief", exact: true });
   await copy.click();
   await expect(page.locator("p[role=alert]")).toContainText("Copying was not confirmed");
   await expect(copy).toBeEnabled();
@@ -253,28 +258,28 @@ test("reports clipboard denial, keeps the prepared copy, and recovers from prepa
     } });
   });
   await copy.click();
-  await expect(page.getByText("Complete report copied to your clipboard.", { exact: true })).toBeVisible();
+  await expect(page.getByText("AI brief copied to your clipboard.", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => (window as unknown as { __repbookClipboard: string }).__repbookClipboard))
     .toBe("# Synthetic complete report");
 
-  await page.route("**/api/export/llm-report", (route) => route.fulfill({ status: 500, body: "private error" }));
-  await page.getByRole("button", { name: "Prepare report for copying", exact: true }).click();
+  await page.route("**/api/export/llm-report?view=brief", (route) => route.fulfill({ status: 500, body: "private error" }));
+  await page.getByRole("button", { name: "Prepare AI brief for copying", exact: true }).click();
   await expect(page.locator("p[role=alert]")).toHaveText("The report could not be prepared. Try again.");
 });
 
 test("keeps oversized reports out of the clipboard and offers the complete download", async ({ page }) => {
   await installClipboardHarness(page);
   await signIn(page);
-  await page.route("**/api/export/llm-report", (route) => route.fulfill({
+  await page.route("**/api/export/llm-report?view=brief", (route) => route.fulfill({
     contentType: "text/markdown", body: "x".repeat(1024 * 1024 + 1),
   }));
   await page.goto("/export");
-  await page.getByRole("button", { name: "Prepare report for copying", exact: true }).click();
-  await expect(page.locator("p[role=alert]")).toContainText("too large to copy safely");
+  await page.getByRole("button", { name: "Prepare AI brief for copying", exact: true }).click();
+  await expect(page.locator("p[role=alert]")).toContainText("clipboard size limit");
   expect(await page.evaluate(() => (window as unknown as { __repbookClipboard?: string }).__repbookClipboard)).toBeUndefined();
   const download = page.getByRole("link", { name: "Download complete report", exact: true });
   await expect(download).toHaveAttribute("href", "/api/export/llm-report?download=1");
-  await page.unroute("**/api/export/llm-report");
+  await page.unroute("**/api/export/llm-report?view=brief");
   // The real export lease has a five-second account cooldown. This test shares
   // the suite's synthetic owner with the earlier actual-report preparation.
   await page.waitForTimeout(5_100);
@@ -305,8 +310,8 @@ test("times out a stalled report and permits retry without a duplicate request",
   await page.goto("/export");
   await page.clock.install();
   let requests = 0;
-  await page.route("**/api/export/llm-report", () => { requests += 1; });
-  const prepare = page.getByRole("button", { name: "Prepare report for copying", exact: true });
+  await page.route("**/api/export/llm-report?view=brief", () => { requests += 1; });
+  const prepare = page.getByRole("button", { name: "Prepare AI brief for copying", exact: true });
   await prepare.click();
   await expect.poll(() => requests).toBe(1);
   await expect(page.getByRole("button", { name: "Preparing report…", exact: true })).toBeDisabled();
@@ -314,8 +319,8 @@ test("times out a stalled report and permits retry without a duplicate request",
   await expect(page.locator("p[role=alert]")).toContainText("took too long");
   await expect(prepare).toBeEnabled();
   expect(requests).toBe(1);
-  await page.unroute("**/api/export/llm-report");
-  await page.route("**/api/export/llm-report", (route) => route.fulfill({ contentType: "text/markdown", body: "# Retry complete" }));
+  await page.unroute("**/api/export/llm-report?view=brief");
+  await page.route("**/api/export/llm-report?view=brief", (route) => route.fulfill({ contentType: "text/markdown", body: "# Retry complete" }));
   await prepare.click();
-  await expect(page.getByRole("button", { name: "Copy report", exact: true })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Copy AI brief", exact: true })).toBeEnabled();
 });

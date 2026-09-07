@@ -1,3 +1,4 @@
+import { withTrainingReviewInstructions } from "@/lib/llm-training-report";
 import { getDb } from "@/db";
 import { parseMarkdownExportRequest } from "@/lib/export-request";
 import { sensitiveResponse } from "@/lib/http-security";
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
     "export",
     async () => {
       const digest = await buildTrainingDigest(db, user.id, since);
-      const brief = renderCoachingBrief(digest);
+      const brief = withTrainingReviewInstructions(renderCoachingBrief(digest));
       await recordExport(db, user.id, "markdown", { weeks });
       return { brief, reportDate: digest.range.untilLocalDate };
     }

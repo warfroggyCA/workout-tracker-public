@@ -1653,18 +1653,26 @@ provider-neutral review instructions and returns a private no-store Markdown
 response with its byte length. `?download=1` returns the complete file as an
 `application/octet-stream` attachment to request file handling rather than inline
 rendering, without assembling a browser Blob or populating the clipboard.
-The copy convenience first prepares at most 1 MiB of decoded response bytes;
-`src/lib/complete-report-copy.ts` checks both the advertised size and the streamed
-body, cancels oversized/error bodies, and never returns a truncated report.
-Preparation has a 30-second abort and is cancelled on unmount. Ready state names
-the size and requires a fresh **Copy report** gesture, preserving WebKit clipboard
-activation without waiting for a network response inside the copy operation.
-Denial retains the bounded prepared report for retry, a 10-second unconfirmed
-copy deadline avoids an indefinite spinner, and success releases the retained
-text. Server preparation failures return a private recoverable response.
-The clipboard limit is an application budget, not a device memory guarantee;
-physical iPad acceptance remains necessary. Report contents and retention gates
-are unchanged; Repbook does not transmit the report to an external provider. The
+The clipboard action requests `?view=brief`, a separate deterministic summary
+rendered by `src/lib/ai-training-brief.ts` from the coherent all-time digest.
+It does not load or serialize the source-record appendix. Every topic has a
+bounded supporting-detail budget; aggregates use the complete digest, recent
+workout and exact-variant examples retain full calendar dates, and selection or
+text excerpts are disclosed. Current Program targets use the owner-scoped
+Program presentation and are explicitly retrieval-time future intent.
+Technical interruptions stay separate from training failure; coverage gaps and
+unknowns remain visible. Both the brief and complete report share the same AI
+review preamble, as does the period-specific Markdown training brief.
+
+`src/lib/complete-report-copy.ts` retains an application limit of 1 MiB, checks
+both advertised size and streamed bytes, and cancels oversized/error bodies
+without returning a truncated response. The message names the application
+budget rather than asserting a device limitation. Preparation has a 30-second
+abort and cancels on unmount. The ready state requires a fresh **Copy AI brief**
+gesture for WebKit clipboard activation. Denial retains prepared text for
+retry, a 10-second unconfirmed-copy deadline avoids an indefinite spinner, and
+success releases the text. The complete download remains independent and
+unchanged. No report is sent to an external provider. The
 bounded Training Brief remains available for a chosen period, the canonical
 full JSON backup remains the recovery copy, and raw CSV, versioned
 analysis-package, and redacted support-bundle workflows
@@ -1751,3 +1759,13 @@ Recovery manifest 16 keeps its existing table inventory. Old records are never
 converted, and older application builds are unsafe after timed prescriptions or
 sets have been written. See the [implementation contract](PROGRAM_EDITOR_MEASUREMENT_PLAN.md)
 for authoring limits and the release boundary.
+
+
+## Loaded-time configuration recovery
+
+The Program slot editor warns when a loaded duration/distance exercise still
+has a repetition prescription and points to explicit loaded seconds per side.
+It does not reinterpret notes, automatically convert a plan, or change history.
+An unsupported active set remains blocked, but explains the future Program
+correction and the existing Replace / Skip set / Technical or app issue
+recovery choices. Future Program edits never alter the active session snapshot.

@@ -36,6 +36,8 @@ const mocks = vi.hoisted(() => ({
     workoutSessions: [],
   })),
   renderCoachingBrief: vi.fn(() => "# Coaching brief"),
+  getActiveProgramPresentation: vi.fn(async () => null),
+  renderAiTrainingBrief: vi.fn(() => "# Summarized AI brief"),
   recordExport: vi.fn(async () => undefined),
   sinceDate: vi.fn((weeks: number | null) =>
     weeks == null ? null : new Date(0)
@@ -82,6 +84,8 @@ vi.mock("@/services/export", () => ({
   recordExport: mocks.recordExport,
   sinceDate: mocks.sinceDate,
 }));
+vi.mock("@/services/program-presentation", () => ({ getActiveProgramPresentation: mocks.getActiveProgramPresentation }));
+vi.mock("@/lib/ai-training-brief", () => ({ renderAiTrainingBrief: mocks.renderAiTrainingBrief }));
 vi.mock("@/services/digest", () => ({
   buildTrainingDigest: mocks.buildTrainingDigest,
   renderCoachingBrief: mocks.renderCoachingBrief,
@@ -212,6 +216,23 @@ describe("HTTP production perimeter", () => {
       /^attachment; filename="pain-and-fatigue-\d{4}-\d{2}-\d{2}\.csv"$/
     );
     assertSensitive(response);
+  });
+
+  it("prepares the private summarized brief without loading raw source records", async () => {
+    const response = await getLlmReport(new Request("http://localhost/api/export/llm-report?view=brief"));
+    expect(response.status).toBe(200);
+    assertSensitive(response);
+    expect(await response.text()).toBe("# Summarized AI brief");
+    expect(mocks.buildLlmTrainingSource).not.toHaveBeenCalled();
+    expect(mocks.getActiveProgramPresentation).toHaveBeenCalledWith(expect.anything(), "user-1");
+    expect(mocks.recordExport).toHaveBeenCalledWith(expect.anything(), "user-1", "markdown", { range: "all", purpose: "summarized_ai_training_brief" });
+  });
+
+  it("rejects unknown report views before loading evidence", async () => {
+    const response = await getLlmReport(new Request("http://localhost/api/export/llm-report?view=invalid"));
+    expect(response.status).toBe(400);
+    assertSensitive(response);
+    expect(mocks.buildTrainingDigest).not.toHaveBeenCalled();
   });
 
   it("builds an all-time private LLM report without a download wrapper", async () => {

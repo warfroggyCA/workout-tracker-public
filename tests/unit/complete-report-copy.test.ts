@@ -18,7 +18,7 @@ describe("bounded complete report clipboard preparation", () => {
     const response = new Response(new ReadableStream({
       pull(controller) { controller.enqueue(new Uint8Array(COMPLETE_REPORT_COPY_MAX_BYTES + 1)); }, cancel,
     }), { headers: { "Content-Length": hasLength ? String(COMPLETE_REPORT_COPY_MAX_BYTES + 1) : "1" } });
-    await expect(readCompleteReportForCopy(response)).rejects.toThrow(/too large.*Download/);
+    await expect(readCompleteReportForCopy(response)).rejects.toThrow(/clipboard size limit.*Download/);
     expect(cancel).toHaveBeenCalledOnce();
   });
   it.each([429, 500, 401])("does not retain or disclose an error body (%i)", async (status) => {

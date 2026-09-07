@@ -33,10 +33,10 @@ export function CopyCompleteReportButton() {
     const controller = new AbortController();
     pending.current = controller;
     setState("loading");
-    setMessage("Preparing your complete report. This can take up to 30 seconds…");
+    setMessage("Preparing your AI training brief. This can take up to 30 seconds…");
     const timeout = window.setTimeout(() => controller.abort(), COMPLETE_REPORT_PREPARE_TIMEOUT_MS);
     try {
-      const response = await fetch("/api/export/llm-report", {
+      const response = await fetch("/api/export/llm-report?view=brief", {
         cache: "no-store",
         headers: { Accept: "text/markdown" },
         signal: controller.signal,
@@ -45,7 +45,7 @@ export function CopyCompleteReportButton() {
       if (!mounted.current || controller.signal.aborted) return;
       setReport(prepared.text);
       setState("ready");
-      setMessage(`Complete report ready (${Math.ceil(prepared.bytes / 1024)} KB). Tap Copy report to place it on your clipboard.`);
+      setMessage(`AI brief ready (${Math.ceil(prepared.bytes / 1024)} KB). Tap Copy AI brief to place it on your clipboard.`);
     } catch (error) {
       if (!mounted.current) return;
       setState("error");
@@ -80,11 +80,11 @@ export function CopyCompleteReportButton() {
       if (!mounted.current) return;
       setReport(null);
       setState("copied");
-      setMessage("Complete report copied to your clipboard.");
+      setMessage("AI brief copied to your clipboard.");
     } catch {
       if (!mounted.current) return;
       setState("error");
-      setMessage("Copying was not confirmed. Allow clipboard access and try Copy report again, or download the complete report file.");
+      setMessage("Copying was not confirmed. Allow clipboard access and try Copy AI brief again, or download the complete report file.");
     } finally {
       window.clearTimeout(timeout);
       copying.current = false;
@@ -93,25 +93,24 @@ export function CopyCompleteReportButton() {
 
   return (
     <div className="space-y-3">
-      <a className={cn(buttonVariants({ size: "lg" }), "h-auto min-h-12 w-full whitespace-normal py-3 text-base")}
-        href="/api/export/llm-report?download=1">
-          <Download className="size-5" aria-hidden="true" />
-          <span className="min-w-0">Download complete report</span>
-      </a>
       <Button
         type="button"
-        variant="outline"
         size="lg"
         className="h-auto min-h-12 w-full whitespace-normal py-3 text-base"
         disabled={state === "loading" || state === "copying"}
         onClick={() => void (report == null ? prepareReport() : copyReport())}
       >
         {state === "copied" ? <Check className="size-5" aria-hidden="true" /> : <ClipboardCopy className="size-5" aria-hidden="true" />}
-        {state === "loading" ? "Preparing report…" : state === "copying" ? "Copying report…" : report != null ? "Copy report" : "Prepare report for copying"}
+        {state === "loading" ? "Preparing report…" : state === "copying" ? "Copying report…" : report != null ? "Copy AI brief" : "Prepare AI brief for copying"}
       </Button>
+      <a className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-auto min-h-12 w-full whitespace-normal py-3 text-base")}
+        href="/api/export/llm-report?download=1">
+          <Download className="size-5" aria-hidden="true" />
+          <span className="min-w-0">Download complete report</span>
+      </a>
       <p className={state === "error" ? "text-sm text-destructive" : "text-sm text-muted-foreground"}
         role={state === "error" ? "alert" : "status"} aria-live="polite">
-        {message || "Download the complete file, or prepare a clipboard copy. Large reports are available as downloads. Repbook does not send them anywhere."}
+        {message || "The copyable brief summarizes all-time evidence with recent examples and AI instructions. The complete download retains the detailed source records. Repbook does not send either to an AI."}
       </p>
     </div>
   );

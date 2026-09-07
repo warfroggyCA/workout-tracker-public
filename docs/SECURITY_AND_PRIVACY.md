@@ -90,8 +90,8 @@ that revision. The response is private and no-store, contains no account
 identity, archive metadata, private contextual notes, raw assistant/provider
 material, request/retry keys, or worker identifiers, and prepends instructions
 that treat workout names, notes, and saved messages as untrusted data. The
-browser requests and writes
-the exact report bytes to the device clipboard only after the owner taps the
+browser requests a summarized `view=brief` projection for copying, without the
+raw source appendix, and writes the exact prepared brief bytes to the device clipboard only after the owner taps the
 primary control. Repbook makes no external provider request, retains no report
 body, and records only the existing coarse Markdown-export receipt. Clipboard
 denial or unavailability remains visible and does not create a false copied
