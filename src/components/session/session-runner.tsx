@@ -4103,7 +4103,7 @@ export function SessionRunner(props: SessionRunnerProps) {
                   metricType: currentMetricType,
                   loadSemantics: currentWorkingExercise.loadSemantics,
                 })
-              ? "This exercise measurement cannot be logged safely."
+              ? "Measurement setup needs attention. See the exercise for recovery options."
               : null;
   const currentSetCommitOccurrence =
     currentWorkingAction == null || currentWorkingExercise == null

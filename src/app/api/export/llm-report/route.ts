@@ -1,3 +1,5 @@
+import { renderAiTrainingBrief } from "@/lib/ai-training-brief";
+import { getActiveProgramPresentation } from "@/services/program-presentation";
 import { getDb } from "@/db";
 import { sensitiveResponse } from "@/lib/http-security";
 import { buildLlmReadyTrainingReport } from "@/lib/llm-training-report";
@@ -11,6 +13,11 @@ export async function GET(request: Request) {
   const user = await getRouteUser();
   if (!user) return sensitiveResponse("Unauthorized", { status: 401 });
 
+  const url = new URL(request.url);
+  const view = url.searchParams.get("view");
+  if (view != null && view !== "brief") return sensitiveResponse("Invalid report view", { status: 400 });
+  const brief = view === "brief";
+
   try {
     const db = await getDb();
     const controlled = await runExpensiveOperation(
@@ -22,6 +29,11 @@ export async function GET(request: Request) {
         let report: string | null = null;
         for (let attempt = 0; attempt < 2; attempt += 1) {
           const digest = await buildTrainingDigest(db, user.id, null, now);
+          if (brief) {
+            const program = await getActiveProgramPresentation(db, user.id);
+            report = renderAiTrainingBrief(digest, program);
+            break;
+          }
           const retainedSource = await buildLlmTrainingSource(db, user.id, now);
           if (
             digest.reporting.evidenceRevision !==
@@ -42,7 +54,7 @@ export async function GET(request: Request) {
         }
         await recordExport(db, user.id, "markdown", {
           range: "all",
-          purpose: "llm_ready_training_report",
+          purpose: brief ? "summarized_ai_training_brief" : "llm_ready_training_report",
         });
         return report;
       },
@@ -60,7 +72,7 @@ export async function GET(request: Request) {
         "Content-Type": download ? "application/octet-stream" : "text/markdown; charset=utf-8",
         "Content-Length": String(Buffer.byteLength(controlled.value, "utf8")),
         ...(download ? {
-          "Content-Disposition": `attachment; filename="repbook-complete-report-${new Date().toISOString().slice(0, 10)}.md"`,
+          "Content-Disposition": `attachment; filename="repbook-${brief ? "ai-brief" : "complete-report"}-${new Date().toISOString().slice(0, 10)}.md"`,
         } : {}),
       },
     });

@@ -44,13 +44,13 @@ export default async function ExportPage({
         <Card className="border-primary/50 bg-primary/3">
           <CardHeader>
             <div className="flex flex-wrap items-center gap-2">
-              <CardTitle>Complete AI report</CardTitle>
+              <CardTitle>AI training report</CardTitle>
               <Badge>Recommended</Badge>
             </div>
             <CardDescription>
-              Creates an all-time training report with instructions already
-              written for an AI assistant, a readable training summary, and retained
-              source records. Download the complete file, or prepare it for copying.
+              Prepare a comprehensive, summarized AI brief for copying, with training
+              context, progress, supporting evidence, limitations, and a ready-to-use
+              AI prompt. Download the complete report when you need every retained source record.
             </CardDescription>
           </CardHeader>
           <CardContent>

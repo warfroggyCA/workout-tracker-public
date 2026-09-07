@@ -99,6 +99,13 @@ export const SlotEditor = memo(function SlotEditor({
         </Button>
       </div>
 
+      {!timed && canUseTimed && (exercise?.metricType === "duration" || exercise?.metricType === "distance_duration") && (
+        <p role="alert" className="mb-3 text-sm text-amber-800 dark:text-amber-200">
+          This loaded timed exercise cannot be logged with a repetition prescription.
+          Choose “Loaded time — each side” below for a carry performed on both sides,
+          or replace it with an exercise whose measurement matches your plan.
+        </p>
+      )}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Field id={`${prefix}-sets`} label="Work sets">
           <Input

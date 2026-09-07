@@ -905,3 +905,13 @@ recovery, copy, non-contiguous group reordering, and loaded-time publication and
 mobile set entry. Physical touch and installed-app acceptance remain separate.
 The application must not be released before migration 0087 is installed through
 its own authorized gate. Do not downgrade after new timed records are written.
+
+
+### AI brief and loaded-time recovery checks
+
+Run the focused report/copy, HTTP route, digest integration, and exercise-card
+unit suites. The R01 browser suite verifies summarized copy, clipboard denial,
+oversized-response containment, retry, complete download, and narrow WebKit
+layout. The Program editor's loaded-seconds-per-side browser case verifies the
+configuration warning clears after explicit selection, future publication,
+offline logging, reconnect, and reload. All fixtures are synthetic and disposable.

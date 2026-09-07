@@ -2,7 +2,7 @@
 export const COMPLETE_REPORT_COPY_MAX_BYTES = 1024 * 1024;
 export const COMPLETE_REPORT_PREPARE_TIMEOUT_MS = 30_000;
 export const COMPLETE_REPORT_COPY_TOO_LARGE =
-  "This complete report is too large to copy safely on this device. Download the complete report file instead; no records are omitted.";
+  "This response exceeds Repbook’s clipboard size limit. Download the complete report file instead; no records are omitted.";
 
 export async function readCompleteReportForCopy(response: Response): Promise<{ text: string; bytes: number }> {
   if (!response.ok) {

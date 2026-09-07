@@ -21,6 +21,8 @@ import {
   buildTrainingDigest,
   renderCoachingBrief,
 } from "@/services/digest";
+import { getActiveProgramPresentation } from "@/services/program-presentation";
+import { renderAiTrainingBrief } from "@/lib/ai-training-brief";
 import { buildLlmTrainingSource } from "@/services/llm-training-source";
 import { createContextualNote } from "@/services/contextual-notes";
 import { getHistoryReport } from "@/services/history-report";
@@ -37,8 +39,10 @@ async function seedReportingPeriod(
   db: Db,
   options: {
     plannedDuration?: { minMinutes: number; maxMinutes: number };
+    nonCompletionReason?: "time_limit_reached" | "technical_app_issue";
   } = {},
 ) {
+  const nonCompletionReason = options.nonCompletionReason ?? "time_limit_reached";
   const plannedDuration = options.plannedDuration ?? {
     minMinutes: 45,
     maxMinutes: 45,
@@ -230,7 +234,7 @@ async function seedReportingPeriod(
         timeBudgetMin: 45,
         completionSemanticsVersion: 1,
         completionState: "completed_with_remaining_work",
-        completionReason: "time_limit_reached",
+        completionReason: nonCompletionReason,
         sourceProgramId: activation.programId,
         sourceProgramVersionId: activation.programVersionId,
         sourceDayLineageId: programDay.lineageId,
@@ -331,9 +335,9 @@ async function seedReportingPeriod(
           plannedLoadUnit: "kg",
           plannedRestSec: 60,
           outcome: "abandoned",
-          outcomeReason: "session_end:time_limit_reached",
+          outcomeReason: `session_end:${nonCompletionReason}`,
           resolutionSemanticsVersion: 1,
-          resolutionReasonCode: "time_limit_reached",
+          resolutionReasonCode: nonCompletionReason,
           resolvedAt: input.finishedAt,
         } as const;
       },
@@ -401,10 +405,10 @@ async function seedReportingPeriod(
         plannedRepsMax: 5,
         outcome: index < 5 ? "completed" : "abandoned",
         outcomeReason:
-          index < 5 ? null : "session_end:time_limit_reached",
+          index < 5 ? null : `session_end:${nonCompletionReason}`,
         resolutionSemanticsVersion: index < 5 ? null : 1,
         resolutionReasonCode:
-          index < 5 ? null : "time_limit_reached",
+          index < 5 ? null : nonCompletionReason,
         resolvedAt: input.finishedAt,
       } as const));
       const insertedWarmups = await db
@@ -448,6 +452,43 @@ describe("training reporting digest integration", () => {
   }, 30_000);
 
   afterEach(async () => database.close());
+
+  it("summarizes large histories without losing topics, changing facts, or copying the audit appendix", async () => {
+    const fixture = await seedReportingPeriod(database.db, { nonCompletionReason: "technical_app_issue" });
+    const digest = await buildTrainingDigest(database.db, fixture.userId, null, NOW);
+    const original = JSON.stringify(digest);
+    const brief = renderAiTrainingBrief(digest, null);
+    expect(brief).toContain("# Instructions for the language model");
+    expect(brief).toContain("Technical/app issues are recording or workflow problems");
+    expect(brief).toContain("technical app issue");
+    expect(brief).toContain("No current Program is available");
+    expect(brief).toContain("Pain and recovery");
+    expect(brief).toContain("Independent activity and feed coverage");
+    expect(brief).not.toContain("Detailed audit appendix");
+    expect(brief).not.toContain("<repbook-retained-source-records>");
+    expect(JSON.stringify(digest)).toBe(original);
+    const program = await getActiveProgramPresentation(database.db, fixture.userId);
+    expect(program).not.toBeNull();
+    const slot = program!.days[0]!.slots[0]!;
+    slot.prescription = { sets: 2, repRangeMin: null, repRangeMax: null,
+      timedPrescription: { version: 1, metricType: "weight_duration_per_side", minSeconds: 30, maxSeconds: 45 },
+      targetLoad: 20, targetLoadUnit: "kg", progressionRuleId: "manual" };
+    const withProgram = renderAiTrainingBrief(digest, program);
+    expect(withProgram).toContain("30–45 sec/side; both sides before rest");
+    expect(withProgram).toContain("20 kg");
+    expect(withProgram).not.toContain("null–null reps");
+    const large = { ...digest, sessions: Array.from({ length: 1000 }, () => digest.sessions).flat(),
+      equipmentSummary: ["Synthetic adjustable kettlebell"],
+      constraints: Array.from({ length: 1000 }, () => ({ bodyPart: "knee", patterns: ["squat"], note: "x".repeat(10000) })),
+      recommendations: Array.from({ length: 1000 }, () => digest.recommendations).flat(),
+    };
+    const summarized = renderAiTrainingBrief(large, null);
+    expect(Buffer.byteLength(summarized, "utf8")).toBeLessThan(100_000);
+    expect(summarized).toContain("entries shown");
+    expect(summarized).toContain("Synthetic adjustable kettlebell");
+    expect(summarized).toContain("[excerpt; see complete report]");
+    expect(summarized).toContain("End of summarized evidence");
+  });
 
   it("renders coverage-first, time-aware, compact, and auditable coach evidence", async () => {
     const fixture = await seedReportingPeriod(database.db);
