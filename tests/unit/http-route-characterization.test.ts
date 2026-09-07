@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
       profile: { coachingPrefs: {} },
     })),
   getDb: vi.fn(async () => ({})),
+  readEvidenceOwner: vi.fn<() => Promise<{ analysisEvidenceRevision: string } | undefined>>(async () => ({ analysisEvidenceRevision: "7" })),
   buildSetsCsv: vi.fn(async () => "date,exercise\n"),
   buildPainFatigueCsv: vi.fn(async () => "date,pain\n"),
   buildActivitiesCsv: vi.fn(async () => "date,activity\n"),
@@ -179,6 +180,8 @@ function responseRequest(headers?: HeadersInit) {
 describe("HTTP production perimeter", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.readEvidenceOwner.mockReset().mockResolvedValue({ analysisEvidenceRevision: "7" });
+    mocks.getDb.mockResolvedValue({ query: { users: { findFirst: mocks.readEvidenceOwner } } });
     mocks.getRouteUser.mockResolvedValue({
       id: "user-1",
       profile: { coachingPrefs: {} },
@@ -233,6 +236,31 @@ describe("HTTP production perimeter", () => {
     expect(response.status).toBe(400);
     assertSensitive(response);
     expect(mocks.buildTrainingDigest).not.toHaveBeenCalled();
+  });
+
+  it("rebuilds the digest and Program together when evidence changes during brief preparation", async () => {
+    mocks.buildTrainingDigest
+      .mockResolvedValueOnce({ weeks: 4, range: { untilLocalDate: "2026-03-31" }, reporting: { evidenceRevision: "7" } })
+      .mockResolvedValueOnce({ weeks: 4, range: { untilLocalDate: "2026-03-31" }, reporting: { evidenceRevision: "8" } });
+    mocks.readEvidenceOwner.mockResolvedValue({ analysisEvidenceRevision: "8" });
+    const response = await getLlmReport(new Request("http://localhost/api/export/llm-report?view=brief"));
+    expect(response.status).toBe(200);
+    expect(mocks.buildTrainingDigest).toHaveBeenCalledTimes(2);
+    expect(mocks.getActiveProgramPresentation).toHaveBeenCalledTimes(2);
+    expect(mocks.renderAiTrainingBrief).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ reporting: { evidenceRevision: "8" } }), null,
+    );
+    expect(mocks.recordExport).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([undefined, { analysisEvidenceRevision: "8" }])("returns no partial brief when the evidence boundary cannot stabilize (%j)", async (owner) => {
+    mocks.readEvidenceOwner.mockResolvedValue(owner);
+    const response = await getLlmReport(new Request("http://localhost/api/export/llm-report?view=brief"));
+    expect(response.status).toBe(503);
+    assertSensitive(response);
+    expect(mocks.getActiveProgramPresentation).toHaveBeenCalledTimes(2);
+    expect(mocks.renderAiTrainingBrief).not.toHaveBeenCalled();
+    expect(mocks.recordExport).not.toHaveBeenCalled();
   });
 
   it("builds an all-time private LLM report without a download wrapper", async () => {
