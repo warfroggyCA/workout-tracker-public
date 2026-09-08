@@ -205,7 +205,7 @@ function InsightsOverview({
   const progressToneLabel = progressLens.tone === "positive"
     ? "Positive signal"
     : progressLens.tone === "watch"
-      ? "Needs attention"
+      ? "Lower result observed"
       : "Review evidence";
   return (
     <div className="flex min-w-0 flex-col gap-5">
@@ -383,7 +383,7 @@ function InsightsOverview({
                   {lens.tone === "positive"
                     ? "Positive signal"
                     : lens.tone === "watch"
-                      ? "Needs attention"
+                      ? lens.key === "progress" ? "Lower result observed" : "Needs attention"
                       : "Review evidence"}
                 </span>
                 <span className="block break-words text-sm font-semibold group-hover:text-primary">
