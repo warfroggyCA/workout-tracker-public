@@ -46,6 +46,15 @@ function renderLens(lens: "progress" | "work-capacity") {
 }
 
 describe("HistoryInsightsWorkspace overview", () => {
+  it("describes a lower result as an observation without implying a waiting action", () => {
+    const { report, activityReport } = emptyReports();
+    report.lenses[0] = { ...report.lenses[0], tone: "watch" };
+    const html = renderOverview({ report, activityReport });
+
+    expect(html).toContain("Lower result observed");
+    expect(html).not.toContain("Needs attention");
+    expect(html).toContain("Open progress evidence");
+  });
   it("presents a concise narrative, exhibits, and direct evidence actions", () => {
     const html = renderOverview();
 

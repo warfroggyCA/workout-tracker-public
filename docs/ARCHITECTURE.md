@@ -267,6 +267,11 @@ may show at most one supported **One thing to review** signal immediately above
 the calendar; unsupported or unavailable conclusions produce no signal. Lens
 cards lead with the short answer and decision support, while retained evidence,
 activity context, limitations, and methodology share one closed disclosure.
+A lower first-to-latest best-set comparison is an observation only. It remains
+visible in Insights as **Lower result observed**, with its exact exercise
+evidence and limitations, but does not create an action banner or a link to the
+Review queue. That comparison alone establishes no Program target change;
+actual recommendations and their owner decisions remain separate.
 This hierarchy changes no report calculation, source record, or recommendation
 state.
 

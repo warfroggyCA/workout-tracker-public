@@ -95,6 +95,7 @@ test("History workspace preserves deep links, Back and Forward, and exact detail
   await expect(page.getByText("Training calendar", { exact: true })).toBeVisible();
   const actionSignal = page.getByText("One thing to review", { exact: true });
   expect(await actionSignal.count()).toBeLessThanOrEqual(1);
+  await expect(page.locator("#history-action-signal-heading")).not.toHaveText("Progress");
   if ((await actionSignal.count()) === 1) {
     const [signalBox, calendarBox] = await Promise.all([
       actionSignal.boundingBox(),
@@ -217,6 +218,8 @@ test("History workspace preserves deep links, Back and Forward, and exact detail
     exact: true,
   });
   await expect(progressLens).toBeVisible();
+  await expect(progressLens.locator('a[href="/coach"]')).toHaveCount(0);
+  await expect(progressLens).not.toContainText("Possible decision:");
   await progressLens.getByText("Evidence and methodology", {
     exact: true,
   }).click();

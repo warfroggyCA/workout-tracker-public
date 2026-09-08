@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { selectHistoryActionSignal } from "@/components/history/history-calendar-workspace";
 import {
   buildHistoryLenses,
   type BuildHistoryLensesInput,
@@ -107,8 +108,15 @@ describe("question-driven History lenses", () => {
     expect(lens.answer).toContain("1 exercise stayed broadly stable");
     expect(lens.answer).toContain("1 exercise moved lower");
     expect(lens.answer).toContain("1 exercise remains uncertain");
-    expect(lens.decision.supported).toBe(true);
+    expect(lens.decision.supported).toBe(false);
     expect(lens.decision.statement).toContain("Squat");
+    expect(lens.decision.statement).toContain("latest comparable best set is lower");
+    expect(lens.decision.statement).toContain("does not establish");
+    expect(lens.decision.href).toBeUndefined();
+    expect(lens.decision.linkLabel).toBeUndefined();
+    expect(selectHistoryActionSignal(lenses)).toBeNull();
+    expect(lens.tone).toBe("watch");
+    expect(lens.evidence.some((item) => item.label === "Squat")).toBe(true);
   });
 
   it("uses the existing one-percent clarity boundary instead of overreading tiny changes", () => {

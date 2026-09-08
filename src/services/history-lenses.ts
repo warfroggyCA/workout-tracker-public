@@ -258,10 +258,8 @@ function buildProgressLens(input: BuildHistoryLensesInput): HistoryLens {
     decision:
       lower.length > 0
         ? {
-            supported: true,
-            statement: `Possible decision: review ${lower[0].exercise}'s target and context before changing the Program.`,
-            href: "/coach",
-            linkLabel: "Open Review and decisions",
+            supported: false,
+            statement: `${lower[0].exercise}'s latest comparable best set is lower. This comparison alone does not establish that its Program target should change.`,
           }
         : noDecision(),
   };
