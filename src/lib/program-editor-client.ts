@@ -576,8 +576,6 @@ export function replaceProgramExercise(
     ...slot,
     exerciseId,
     lineageId,
-    supersetKey: null,
-    groupMemberOrderIdx: null,
   };
 }
 

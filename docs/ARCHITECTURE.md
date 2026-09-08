@@ -33,6 +33,11 @@ immutable Program version used only by workouts started afterward. An active
 session keeps its start-time snapshot; completed and imported History and every
 earlier Program version remain unchanged.
 
+Replacing an exercise in the Program editor starts fresh exercise lineage while
+preserving its superset membership, member order, targets, rounds, and rest.
+The replacement stays in the draft until the normal Review and Publish flow;
+removing an exercise or explicitly ungrouping remains a separate action.
+
 Cross-version drafts are schema-validated and fenced by their saved revision
 and canonical content hash. Harmless legacy JSON fields do not block publication
 or become part of the new immutable version.

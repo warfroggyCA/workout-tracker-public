@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import type { ProgramDocumentV3 } from "../../src/lib/program-document";
 import {
   installNextDevelopmentRefreshControl,
   waitForHydratedServerAction,
@@ -21,6 +22,88 @@ async function signIn(page: Page) {
 async function expectSaved(page: Page) {
   await expect(page.getByRole("status")).toContainText("All changes saved");
 }
+
+test("preserves a superset through exercise replacement, autosave, reload, and review", async ({ page }, testInfo) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await signIn(page);
+  await page.goto("/program/edit");
+  await expectSaved(page);
+  const state = await (await page.request.get("/api/program/draft")).json();
+  const document: ProgramDocumentV3 = structuredClone(state.draft.document);
+  const day = document.days[0];
+  const groupKey = crypto.randomUUID();
+  day.supersets = [{
+    key: groupKey, name: "Synthetic replacement pair", structureStatus: "canonical",
+    plannedRounds: 3, restBetweenMembersSec: 15, restBetweenRoundsSec: 75, restAfterRoundSec: 75,
+  }];
+  day.exercises.forEach((slot, index) => {
+    slot.supersetKey = index < 2 ? groupKey : null;
+    slot.groupMemberOrderIdx = index < 2 ? index : null;
+    if (index < 2) {
+      slot.sets = 3;
+      slot.setNotes = [null, null, null];
+      slot.intent.minimumDose = { unit: "sets", value: 1 };
+      slot.intent.idealDose = { unit: "sets", value: 3 };
+    }
+  });
+  day.intent.identity = { kind: "anchor_slots", anchorSlotLineageIds: [day.exercises[0].lineageId] };
+  const seeded = await page.request.put("/api/program/draft", {
+    headers: { origin: "http://127.0.0.1:3100" },
+    data: { draftId: state.draft.id, expectedRevision: state.draft.revision, mutationId: crypto.randomUUID(), document },
+  });
+  expect(await seeded.json()).toMatchObject({ status: "saved" });
+  await page.reload();
+  await expectSaved(page);
+
+  for (const [index, exerciseName] of ["Bird Dog", "Push-Up"].entries()) {
+    await page.setViewportSize(index === 0 ? { width: 1180, height: 820 } : { width: 390, height: 844 });
+    const before: ProgramDocumentV3 = (await (await page.request.get("/api/program/draft")).json()).draft.document;
+    const previous = before.days[0].exercises[index];
+    const card = page.locator(`[data-program-slot-lineage="${previous.lineageId}"]`);
+    if (await card.locator("article").count() === 0) {
+      await card.getByRole("button", { name: new RegExp(`Exercise ${index + 1} `) }).click();
+    }
+    await card.getByRole("button", { name: "Replace exercise", exact: true }).click();
+    const picker = page.getByRole("dialog", { name: "Replace this exercise", exact: true });
+    await picker.getByLabel("Search exercise library").fill(exerciseName);
+    await expect(picker.getByRole("button", { name: `View details for ${exerciseName}`, exact: true })).toBeVisible();
+    await picker.getByRole("button", { name: `View details for ${exerciseName}`, exact: true }).click();
+    await picker.getByRole("button", { name: "Replace exercise", exact: true }).click();
+    await expect(picker).not.toBeVisible();
+    await expectSaved(page);
+    const after: ProgramDocumentV3 = (await (await page.request.get("/api/program/draft")).json()).draft.document;
+    const replacement = after.days[0].exercises[index];
+    expect(replacement.exerciseId).not.toBe(previous.exerciseId);
+    expect(replacement.lineageId).not.toBe(previous.lineageId);
+    expect(replacement).toEqual({ ...previous, exerciseId: replacement.exerciseId, lineageId: replacement.lineageId });
+    expect(after.days[0].supersets).toEqual(before.days[0].supersets);
+    expect(after.days[0].exercises.filter((_, position) => position !== index)).toEqual(before.days[0].exercises.filter((_, position) => position !== index));
+    expect(after.days[0].intent.identity.anchorSlotLineageIds).toEqual([
+      index === 0 ? replacement.lineageId : before.days[0].exercises[0].lineageId,
+    ]);
+    await page.reload();
+    await expectSaved(page);
+    await expect(page.locator(`[data-program-slot-unit="${groupKey}"]`)).toHaveCount(2);
+    await expect(page.locator("summary").filter({ hasText: /^Superset:/ })).toContainText("Bird Dog");
+    expect((await (await page.request.get("/api/program/draft")).json()).draft.document).toEqual(after);
+  }
+  await assertNoHorizontalOverflow(page);
+  await page.screenshot({ path: testInfo.outputPath("replacement-superset-mobile.png"), fullPage: true });
+  await page.getByRole("tab", { name: "Review", exact: true }).click();
+  await page.getByRole("button", { name: "Check Program", exact: true }).first().click();
+  await expect(page.getByRole("heading", { name: "Ready to publish" })).toBeVisible();
+  expect(errors).toEqual([]);
+  const latest = await (await page.request.get("/api/program/draft")).json();
+  const restored = await page.request.put("/api/program/draft", {
+    headers: { origin: "http://127.0.0.1:3100" },
+    data: {
+      draftId: latest.draft.id, expectedRevision: latest.draft.revision,
+      mutationId: crypto.randomUUID(), document: state.draft.document,
+    },
+  });
+  expect(await restored.json()).toMatchObject({ status: "saved" });
+});
 
 async function assertNoHorizontalOverflow(page: Page) {
   await page.waitForTimeout(300);

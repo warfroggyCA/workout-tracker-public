@@ -137,7 +137,7 @@ describe("Program editor client rules", () => {
     );
   });
 
-  it("resets lineage and superset membership on explicit replacement", () => {
+  it("starts fresh lineage while preserving superset membership on explicit replacement", () => {
     const original = document().days[0].exercises[0];
     const replaced = replaceProgramExercise(
       original,
@@ -148,7 +148,8 @@ describe("Program editor client rules", () => {
     expect(replaced).toMatchObject({
       exerciseId: IDs.exerciseB,
       lineageId: "00000000-0000-4000-8000-000000000011",
-      supersetKey: null,
+      supersetKey: IDs.group,
+      groupMemberOrderIdx: 0,
       sets: original.sets,
       repMin: original.repMin,
       repMax: original.repMax,
@@ -156,6 +157,58 @@ describe("Program editor client rules", () => {
     expect(original).toMatchObject({
       exerciseId: IDs.exerciseA,
       lineageId: IDs.slotA,
+    });
+  });
+
+  it.each([0, 1])("keeps both members, rounds and rest after replacing member %i and normalizing the day", (memberIndex) => {
+    const source = document();
+    const before = structuredClone(source);
+    const next = updateProgramDocumentDay(source, 0, (day) => ({
+      ...day,
+      exercises: day.exercises.map((slot, index) => index === memberIndex
+        ? replaceProgramExercise(slot, IDs.exerciseC, IDs.slotC)
+        : slot),
+    }));
+    const day = next.days[0];
+    expect(day.supersets).toEqual(source.days[0].supersets);
+    expect(day.exercises).toEqual(source.days[0].exercises.map((slot, index) => index === memberIndex
+      ? { ...slot, exerciseId: IDs.exerciseC, lineageId: IDs.slotC }
+      : slot));
+    expect(programDocumentV3Schema.safeParse(next).success).toBe(true);
+    expect(source).toEqual(before);
+  });
+
+  it("preserves an older unequal three-member group when replacing its middle member", () => {
+    const day = document().days[0];
+    day.exercises.push({
+      ...createDefaultProgramSlot(IDs.exerciseC, IDs.slotC),
+      supersetKey: IDs.group,
+      groupMemberOrderIdx: 2,
+      sets: 4,
+      setNotes: [null, null, null, null],
+    });
+    const source = normalizeDaySupersets(day);
+    const next = normalizeDaySupersets({
+      ...source,
+      exercises: source.exercises.map((slot, index) => index === 1
+        ? replaceProgramExercise(slot, IDs.exerciseC, IDs.draft)
+        : slot),
+    });
+    expect(next.supersets).toEqual(source.supersets);
+    expect(next.supersets[0].structureStatus).toBe("legacy_unequal");
+    expect(next.exercises.map((slot) => slot.groupMemberOrderIdx)).toEqual([0, 1, 2]);
+    expect(next.exercises.map((slot) => slot.sets)).toEqual([3, 3, 4]);
+    expect(next.exercises.map((slot) => slot.supersetKey)).toEqual([IDs.group, IDs.group, IDs.group]);
+  });
+
+  it("leaves same-exercise selections unchanged and standalone replacements ungrouped", () => {
+    const grouped = document().days[0].exercises[0];
+    expect(replaceProgramExercise(grouped, grouped.exerciseId, IDs.slotC)).toBe(grouped);
+    const standalone = createDefaultProgramSlot(IDs.exerciseA, IDs.slotA);
+    expect(replaceProgramExercise(standalone, IDs.exerciseC, IDs.slotC)).toEqual({
+      ...standalone,
+      exerciseId: IDs.exerciseC,
+      lineageId: IDs.slotC,
     });
   });
 
