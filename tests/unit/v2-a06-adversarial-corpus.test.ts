@@ -434,7 +434,7 @@ describe("A06 stateful import oracles", () => {
 
     const duplicate = corpusItem("duplicate");
     const beforeDuplicate = await importState();
-    const replay = await importExternalAnalysisSelection(db, ownerId, request);
+    const replay = await importExternalAnalysisSelection(db, ownerId, request, { now: new Date("2026-08-08T18:00:00.000Z") });
     expect(replay).toMatchObject({ ok: true, replay: duplicate.expectedCode });
     expect(duplicate.oracle).toBe("accept");
     expect(await importState()).toBe(beforeDuplicate);
@@ -446,7 +446,7 @@ describe("A06 stateful import oracles", () => {
       "Conflicting content reuses the exact response identity.";
     const beforeConflict = await importState();
     await expect(
-      importExternalAnalysisSelection(db, ownerId, changed),
+      importExternalAnalysisSelection(db, ownerId, changed, { now: new Date("2026-08-08T18:00:00.000Z") }),
     ).resolves.toMatchObject({
       ok: false,
       reason: conflicting.expectedCode,
@@ -460,7 +460,7 @@ describe("A06 stateful import oracles", () => {
     const beforeCrossUser = await importState();
     const beforeCrossUserProtected = await protectedState();
     await expect(
-      importExternalAnalysisSelection(db, otherOwnerId, otherOwnerRequest),
+      importExternalAnalysisSelection(db, otherOwnerId, otherOwnerRequest, { now: new Date("2026-08-08T18:00:00.000Z") }),
     ).resolves.toMatchObject({
       ok: false,
       reason: crossUser.expectedCode,
@@ -487,7 +487,7 @@ describe("A06 stateful import oracles", () => {
     const beforeStale = await importState();
     const beforeStaleProtected = await protectedState();
     await expect(
-      importExternalAnalysisSelection(db, ownerId, staleRequest),
+      importExternalAnalysisSelection(db, ownerId, staleRequest, { now: new Date("2026-08-08T18:00:00.000Z") }),
     ).resolves.toMatchObject({ ok: false, reason: stale.expectedCode });
     expect(stale.oracle).toBe("recovery");
     expect(await importState()).toBe(beforeStale);

@@ -243,14 +243,14 @@ describe("A05 selective external-analysis Review bridge", () => {
     expect(await db.select().from(adaptationEvents)).toHaveLength(0);
 
     await expect(
-      importExternalAnalysisSelection(db, ownerId, request),
+      importExternalAnalysisSelection(db, ownerId, request, { now: new Date("2026-08-08T18:00:00.000Z") }),
     ).resolves.toMatchObject({ ok: true, replay: "idempotent_duplicate" });
     expect(await db.select().from(recommendations)).toHaveLength(1);
 
     const conflicting = structuredClone(request);
     conflicting.response.observations[0].statement = "Changed under the same response identity.";
     await expect(
-      importExternalAnalysisSelection(db, ownerId, conflicting),
+      importExternalAnalysisSelection(db, ownerId, conflicting, { now: new Date("2026-08-08T18:00:00.000Z") }),
     ).resolves.toMatchObject({ ok: false, reason: "conflict" });
   }, 30_000);
 
@@ -262,7 +262,7 @@ describe("A05 selective external-analysis Review bridge", () => {
       .returning({ id: users.id });
 
     await expect(
-      importExternalAnalysisSelection(db, otherOwner.id, request),
+      importExternalAnalysisSelection(db, otherOwner.id, request, { now: new Date("2026-08-08T18:00:00.000Z") }),
     ).resolves.toMatchObject({ ok: false, reason: "missing_manifest" });
     expect(await db.select().from(coachingInsights)).toHaveLength(0);
     expect(await db.select().from(recommendations)).toHaveLength(0);
@@ -290,7 +290,7 @@ describe("A05 selective external-analysis Review bridge", () => {
       .set({ historyRevision: 1 })
       .where(eq(workoutSessions.id, completedSessionId));
     await expect(
-      importExternalAnalysisSelection(db, ownerId, correctedBeforeImport),
+      importExternalAnalysisSelection(db, ownerId, correctedBeforeImport, { now: new Date("2026-08-08T18:00:00.000Z") }),
     ).resolves.toMatchObject({ ok: false, reason: "stale_evidence" });
     expect(await db.select().from(coachingInsights)).toHaveLength(0);
     expect(await db.select().from(recommendations)).toHaveLength(0);
@@ -303,6 +303,7 @@ describe("A05 selective external-analysis Review bridge", () => {
     const correctedDuringImport = await createImportRequest();
     await expect(
       importExternalAnalysisSelection(db, ownerId, correctedDuringImport, {
+        now: new Date("2026-08-08T18:00:00.000Z"),
         beforeClaim: async () => {
           await db
             .update(workoutSessions)
@@ -328,12 +329,13 @@ describe("A05 selective external-analysis Review bridge", () => {
       note: "Changed after package preview",
     }).where(eq(constraints.id, constraint.id));
     await expect(
-      importExternalAnalysisSelection(db, ownerId, beforeConstraintChange),
+      importExternalAnalysisSelection(db, ownerId, beforeConstraintChange, { now: new Date("2026-08-08T18:00:00.000Z") }),
     ).resolves.toMatchObject({ ok: false, reason: "stale_evidence" });
 
     const duringConstraintChange = await createImportRequest();
     await expect(
       importExternalAnalysisSelection(db, ownerId, duringConstraintChange, {
+        now: new Date("2026-08-08T18:00:00.000Z"),
         beforeClaim: async () => {
           await db.update(constraints).set({
             note: "Changed during atomic import claim",
@@ -346,7 +348,7 @@ describe("A05 selective external-analysis Review bridge", () => {
     const constraintImport = await importExternalAnalysisSelection(
       db,
       ownerId,
-      afterConstraintChange,
+      afterConstraintChange, { now: new Date("2026-08-08T18:00:00.000Z") },
     );
     if (!constraintImport.ok) throw new Error(constraintImport.message);
     const constraintReceipt = await db.query.coachingInsights.findFirst({
@@ -378,7 +380,7 @@ describe("A05 selective external-analysis Review bridge", () => {
     const activityImport = await importExternalAnalysisSelection(
       db,
       ownerId,
-      activityRequest,
+      activityRequest, { now: new Date("2026-08-08T18:00:00.000Z") },
     );
     if (!activityImport.ok) throw new Error(activityImport.message);
     const activityReceipt = await db.query.coachingInsights.findFirst({
@@ -409,7 +411,7 @@ describe("A05 selective external-analysis Review bridge", () => {
     await expect(importExternalAnalysisSelection(
       db,
       ownerId,
-      beforeFirstConstraint,
+      beforeFirstConstraint, { now: new Date("2026-08-08T18:00:00.000Z") },
     )).resolves.toMatchObject({ ok: false, reason: "stale_evidence" });
 
     const duringNewConstraint = await createImportRequest("recovery_constraints");
@@ -418,6 +420,7 @@ describe("A05 selective external-analysis Review bridge", () => {
       ownerId,
       duringNewConstraint,
       {
+        now: new Date("2026-08-08T18:00:00.000Z"),
         beforeClaim: async () => {
           await db.insert(constraints).values({
             userId: ownerId,
@@ -446,14 +449,14 @@ describe("A05 selective external-analysis Review bridge", () => {
     await expect(importExternalAnalysisSelection(
       db,
       ownerId,
-      beforeReactivation,
+      beforeReactivation, { now: new Date("2026-08-08T18:00:00.000Z") },
     )).resolves.toMatchObject({ ok: false, reason: "stale_evidence" });
 
     const beforeNewActivity = await createImportRequest("training_consistency");
     const imported = await importExternalAnalysisSelection(
       db,
       ownerId,
-      beforeNewActivity,
+      beforeNewActivity, { now: new Date("2026-08-08T18:00:00.000Z") },
     );
     if (!imported.ok) throw new Error(imported.message);
     const receipt = await db.query.coachingInsights.findFirst({
@@ -486,7 +489,7 @@ describe("A05 selective external-analysis Review bridge", () => {
 
   it("backs up and fully restores a legitimate stale external receipt", async () => {
     const request = await createImportRequest();
-    const imported = await importExternalAnalysisSelection(db, ownerId, request);
+    const imported = await importExternalAnalysisSelection(db, ownerId, request, { now: new Date("2026-08-08T18:00:00.000Z") });
     if (!imported.ok) throw new Error(imported.message);
     await db.update(workoutSessions).set({
       historyRevision: 1,
@@ -557,7 +560,7 @@ describe("A05 selective external-analysis Review bridge", () => {
 
   it("keeps defer and reject durable without creating an adaptation", async () => {
     const request = await createImportRequest();
-    const imported = await importExternalAnalysisSelection(db, ownerId, request);
+    const imported = await importExternalAnalysisSelection(db, ownerId, request, { now: new Date("2026-08-08T18:00:00.000Z") });
     if (!imported.ok) throw new Error(imported.message);
     const recommendation = (await db.select().from(recommendations))[0]!;
 
@@ -585,7 +588,7 @@ describe("A05 selective external-analysis Review bridge", () => {
 
   it("keeps a fresh external proposal actionable across its own defer and resume lifecycle", async () => {
     const request = await createImportRequest();
-    const imported = await importExternalAnalysisSelection(db, ownerId, request);
+    const imported = await importExternalAnalysisSelection(db, ownerId, request, { now: new Date("2026-08-08T18:00:00.000Z") });
     if (!imported.ok) throw new Error(imported.message);
     const recommendation = (await db.select().from(recommendations))[0]!;
 
@@ -624,7 +627,7 @@ describe("A05 selective external-analysis Review bridge", () => {
 
   it("keeps sibling proposals actionable after a decision from the same import", async () => {
     const request = await createTwoProposalImportRequest();
-    const imported = await importExternalAnalysisSelection(db, ownerId, request);
+    const imported = await importExternalAnalysisSelection(db, ownerId, request, { now: new Date("2026-08-08T18:00:00.000Z") });
     if (!imported.ok) throw new Error(imported.message);
     const receiptBefore = await db.query.coachingInsights.findFirst({
       where: eq(coachingInsights.id, imported.importId),
@@ -671,7 +674,7 @@ describe("A05 selective external-analysis Review bridge", () => {
 
   it("rolls back the receipt cursor with a failed external decision", async () => {
     const request = await createImportRequest();
-    const imported = await importExternalAnalysisSelection(db, ownerId, request);
+    const imported = await importExternalAnalysisSelection(db, ownerId, request, { now: new Date("2026-08-08T18:00:00.000Z") });
     if (!imported.ok) throw new Error(imported.message);
     const recommendation = (await db.select().from(recommendations))[0]!;
     const receiptBefore = await db.query.coachingInsights.findFirst({
@@ -701,7 +704,7 @@ describe("A05 selective external-analysis Review bridge", () => {
 
   it("keeps a sibling actionable after rejecting another proposal from the same import", async () => {
     const request = await createTwoProposalImportRequest();
-    const imported = await importExternalAnalysisSelection(db, ownerId, request);
+    const imported = await importExternalAnalysisSelection(db, ownerId, request, { now: new Date("2026-08-08T18:00:00.000Z") });
     if (!imported.ok) throw new Error(imported.message);
     const importedRecommendations = await db.select().from(recommendations);
 
@@ -724,7 +727,7 @@ describe("A05 selective external-analysis Review bridge", () => {
 
   it("does not revalidate a receipt after unrelated evidence changes during Review", async () => {
     const request = await createTwoProposalImportRequest();
-    const imported = await importExternalAnalysisSelection(db, ownerId, request);
+    const imported = await importExternalAnalysisSelection(db, ownerId, request, { now: new Date("2026-08-08T18:00:00.000Z") });
     if (!imported.ok) throw new Error(imported.message);
     const importedRecommendations = await db.select().from(recommendations);
     const deferred = importedRecommendations[0]!;
@@ -773,7 +776,7 @@ describe("A05 selective external-analysis Review bridge", () => {
 
   it("edit-and-accept atomically records only a future Review direction", async () => {
     const request = await createImportRequest();
-    const imported = await importExternalAnalysisSelection(db, ownerId, request);
+    const imported = await importExternalAnalysisSelection(db, ownerId, request, { now: new Date("2026-08-08T18:00:00.000Z") });
     if (!imported.ok) throw new Error(imported.message);
     const recommendation = (await db.select().from(recommendations))[0]!;
     const assessment = await resolveReviewEvidence(db, ownerId, recommendation);
@@ -805,7 +808,7 @@ describe("A05 selective external-analysis Review bridge", () => {
 
   it("atomically blocks new safety evidence after decision preflight", async () => {
     const request = await createImportRequest("recovery_constraints");
-    const imported = await importExternalAnalysisSelection(db, ownerId, request);
+    const imported = await importExternalAnalysisSelection(db, ownerId, request, { now: new Date("2026-08-08T18:00:00.000Z") });
     if (!imported.ok) throw new Error(imported.message);
     const recommendation = (await db.select().from(recommendations))[0]!;
 
@@ -841,7 +844,7 @@ describe("A05 selective external-analysis Review bridge", () => {
 
   it("stale-fences evidence correction and Program drift while preserving the allowlisted receipt through snapshot validation", async () => {
     const request = await createImportRequest();
-    const imported = await importExternalAnalysisSelection(db, ownerId, request);
+    const imported = await importExternalAnalysisSelection(db, ownerId, request, { now: new Date("2026-08-08T18:00:00.000Z") });
     if (!imported.ok) throw new Error(imported.message);
     const recommendation = (await db.select().from(recommendations))[0]!;
     const receipt = (await db.select().from(coachingInsights))[0]!;
