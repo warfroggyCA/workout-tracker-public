@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/card";
 import { formatRelativeLocalDate } from "@/lib/dates";
 import { ExerciseFamilyIcon } from "@/components/exercises/exercise-family-icon";
+import { FroggyFormDemoProvider, FroggyFormDemoTrigger } from "@/components/exercises/froggy-form-demo";
 import { WorkoutStartForm } from "@/components/session/workout-start-form";
 import { hasProgrammedWarmupActions } from "@/lib/warmup";
 import { ActiveWorkoutDiscard } from "@/components/session/active-workout-actions";
@@ -534,12 +535,20 @@ export default async function TodayPage({
                           key={slot.id}
                           className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1 py-3 sm:flex"
                         >
-                          <ExerciseFamilyIcon
-                            family={exercise.family}
-                            exerciseName={exercise.name}
-                            movementPattern={exercise.movementPattern}
-                            className="size-11 rounded-full bg-muted/65 text-muted-foreground"
-                          />
+                          <FroggyFormDemoProvider
+                            demo={exercise.formDemo}
+                            exerciseId={exercise.id}
+                            presentation="dialog"
+                          >
+                            <FroggyFormDemoTrigger>
+                              <ExerciseFamilyIcon
+                                family={exercise.family}
+                                exerciseName={exercise.name}
+                                movementPattern={exercise.movementPattern}
+                                className="size-11 rounded-full bg-muted/65 text-muted-foreground"
+                              />
+                            </FroggyFormDemoTrigger>
+                          </FroggyFormDemoProvider>
                           <span className="min-w-0 flex-1 truncate font-medium">
                             {exercise.name}
                           </span>
