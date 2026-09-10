@@ -69,8 +69,11 @@ does not write workout state or control its timer.
 `FROGGY_FORM_DEMO_PILOT=true` enables the server-side presentation mapping. The
 flag is off by default. The resolver requires a reviewed global catalog entry,
 an exact allowlisted variant key and load type, and matching laterality and
-attributes. Bilateral variants require an empty attribute object; the four
-unilateral variants require exactly `{ laterality: "unilateral" }`.
+attributes. Bilateral variants require an empty attribute object. Unilateral
+variants require exactly `{ laterality: "unilateral" }`, except the kettlebell
+suitcase carry also accepts migration 0087's empty attribute object with its
+required `isUnilateral=true` field. This supports the migrated and seeded
+representations without rewriting catalog records or admitting other variants.
 `src/lib/froggy-form-demo.ts` is the authoritative list of all twenty-one bindings.
 Renamed display labels do not affect matching; related or conflicting variants
 fail closed. The generic cable-leg-curl and triceps-pushdown entries explicitly
