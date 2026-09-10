@@ -21,6 +21,12 @@ export function FroggyMuscleMap({
 }) {
   const id = useId();
   const [hover, setHover] = useState<string | null>(null);
+  function toggle(muscle: string) {
+    // A click also focuses the SVG path. Clear the temporary preview so it
+    // cannot masquerade as selection after a second click or keyboard toggle.
+    setHover(null);
+    onToggle?.(muscle);
+  }
   return (
     <div className={styles.figures}>
       {(["front", "back"] as const).map((view) => {
@@ -66,14 +72,14 @@ export function FroggyMuscleMap({
                         onToggle ? selected.has(region.muscle) : undefined
                       }
                       onClick={
-                        onToggle ? () => onToggle(region.muscle) : undefined
+                        onToggle ? () => toggle(region.muscle) : undefined
                       }
                       onKeyDown={
                         onToggle
                           ? (e) => {
                               if (e.key === " " || e.key === "Enter") {
                                 e.preventDefault();
-                                onToggle(region.muscle);
+                                toggle(region.muscle);
                               }
                             }
                           : undefined
