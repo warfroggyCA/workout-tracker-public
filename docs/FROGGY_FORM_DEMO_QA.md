@@ -1,7 +1,7 @@
 # Froggy form viewer verification
 
 The optional viewer covers twenty-one exact catalog identities in Program,
-exercise-picker details and active workouts. Tests use disposable synthetic
+Today day previews, exercise-picker details and active workouts. Tests use disposable synthetic
 accounts and records. This document describes observed checks and their limits;
 it is not production-release evidence or a certification of exercise technique.
 
@@ -15,6 +15,10 @@ discovery projection, shipped media, and all 144-frame tracking sequences.
 videos or animated sheets, and that both opted-in sprite sheets are complete,
 transparent and smaller than 200 KB.
 
+`tests/unit/today-form-preview.test.tsx` renders the actual Today page for the
+next and alternate Program day, verifies the form entry without an initial
+video, and preserves the ordinary icon for missing or stale descriptors.
+
 Existing Program-presentation, discovery and exercise-card suites remain part
 of verification. The repository's standard unit, type, lint, build and protected
 CI commands apply; see [Development](DEVELOPMENT.md#pull-requests). The viewer
@@ -22,6 +26,11 @@ adds no schema, import, calculation, timer or Coach persistence contract.
 
 ## Observed browser behavior
 
+- Today: both the next-day disclosure and alternate-day preview expose the
+  form dialog without starting a workout. Curl and squat clips autoplayed;
+  pause, keyboard opening, Escape, close-button dismissal and focus return
+  were checked. The list and dialog were visually inspected at 390×844 with
+  no horizontal overflow; unsupported Dumbbell Row kept its ordinary icon.
 - Program icons open and close the inline preview. Opening starts silent
   playback; tapping the image pauses it. Closing removes its video element.
 - Two form callouts remain visible while DO/AVOID cards cycle independently.

@@ -1,6 +1,6 @@
 # Froggy form viewer pilot
 
-The optional viewer covers twenty-one reviewed catalog identities with explicit demonstrated setups. Each uses a silent six-second loop in the same three places:
+The optional viewer covers twenty-one reviewed catalog identities with explicit demonstrated setups. Each uses a silent six-second loop across four presentation surfaces:
 
 | Exercise | Media modes | Current export |
 | --- | --- | --- |
@@ -29,6 +29,7 @@ The optional viewer covers twenty-one reviewed catalog identities with explicit 
 Consistent final-resolution finishing remains for the 800×720 and 512-square clips. No unavailable mode is offered. Presentation surfaces:
 
 - Program exercise card: the Froggy thumbnail toggles the inline preview open/closed; the corner expand control opens a dialog.
+- Today day preview: the Froggy thumbnail in Preview planned exercises (including another day's Planned exercises list) opens the same dialog before a workout starts. Unsupported exercises retain their existing icons; viewing form does not start a workout or change the selected day.
 - Active workout exercise card: the Froggy thumbnail opens a dialog without navigation.
 - Exercise picker inventory: a static availability label in results, with the
   same inline viewer opening automatically in exercise details. There is no separate inventory route.
