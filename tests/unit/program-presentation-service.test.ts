@@ -74,6 +74,27 @@ describe("saved Program presentation loader", () => {
     ]);
   });
 
+  it("carries the exact exercise muscle roles without family or name inference", async () => {
+    const day = template("mapped", null, 0);
+    Object.assign(day.slots[0].exercise, {
+      primaryMuscles: ["chest"],
+      secondaryMuscles: ["triceps"],
+      catalogReviewed: true,
+    });
+    programMocks.getTemplatesWithSlots.mockResolvedValue([day]);
+    const db = { query: { supersetGroups: { findMany: vi.fn() } } };
+    const result = await getActiveProgramPresentation(db as never, "owner");
+    expect(result?.days[0].slots[0].exercise.muscleMapping).toEqual({
+      primary: ["chest"],
+      supporting: ["triceps"],
+      catalogReviewed: true,
+    });
+    expect(programMocks.getActiveProgramVersion).toHaveBeenCalledWith(
+      db,
+      "owner",
+    );
+  });
+
   it("does not issue an empty superset query", async () => {
     programMocks.getTemplatesWithSlots.mockResolvedValue([
       template("day-1", null, 0),

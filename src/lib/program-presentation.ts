@@ -30,6 +30,11 @@ export type ProgramPresentationSource = {
         name: string;
         family: string | null;
         movementPattern: string;
+        muscleMapping?: {
+          primary: string[];
+          supporting: string[];
+          catalogReviewed: boolean;
+        };
       };
       orderIdx: number;
       supersetGroupId: string | null;

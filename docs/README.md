@@ -11,6 +11,7 @@ evidence, deployment identifiers, or roadmap priority.
 | [`../AGENTS.md`](../AGENTS.md) | Mandatory application and data safeguards |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Current system ownership, persisted meaning, concurrency, recovery, and product contracts |
 | [`ACTIVE_WORKOUT_NORTH_STAR.md`](ACTIVE_WORKOUT_NORTH_STAR.md) | Approved active-workout visual direction, interaction contract, phased implementation plan, and acceptance bar |
+| [`PROGRAM_MUSCLE_MAP.md`](PROGRAM_MUSCLE_MAP.md) | Read-only Program coverage, shared artwork and count semantics |
 | [`COACHING_PRODUCT_REQUIREMENTS.md`](COACHING_PRODUCT_REQUIREMENTS.md) | Current athlete-facing coaching and Program-change requirements |
 | [`DEVELOPMENT.md`](DEVELOPMENT.md) | Setup, exact verification commands, and public delivery workflow |
 | [`SECURITY_AND_PRIVACY.md`](SECURITY_AND_PRIVACY.md) | Public/private data boundary and security requirements |

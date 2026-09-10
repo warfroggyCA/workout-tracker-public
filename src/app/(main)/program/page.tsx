@@ -69,6 +69,14 @@ export default async function ProgramPage(props: PageProps<"/program">) {
             >
               <CalendarDays /> Schedule
             </Button>
+            <Button
+              variant="outline"
+              size="touch"
+              render={<Link href="/program/muscles" prefetch={false} />}
+              nativeButton={false}
+            >
+              Muscle map
+            </Button>
           </nav>
           {recentProposal && (
             <section className="mb-4 flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-[var(--shadow-soft)] sm:flex-row sm:items-center sm:justify-between">

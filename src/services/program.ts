@@ -146,6 +146,8 @@ export type TemplateWithSlots = {
       family: string | null;
       movementPattern: string;
       primaryMuscles: string[];
+      secondaryMuscles?: string[];
+      catalogReviewed?: boolean;
       loadType: string;
       metricType: "weight_reps" | "reps" | "assisted_reps" | "duration" | "weight_duration_per_side" | "distance_duration" | "activity";
       loadSemantics: "total" | "per_implement" | "bodyweight" | "added_weight" | "assistance" | "machine_stack" | "resistance_band" | "none";
@@ -194,6 +196,8 @@ export async function getTemplatesWithSlots(
         family: e.exercise.family?.name ?? null,
         movementPattern: e.exercise.movementPattern,
         primaryMuscles: e.exercise.primaryMuscles,
+        secondaryMuscles: e.exercise.secondaryMuscles,
+        catalogReviewed: e.exercise.catalogReviewed,
         loadType: e.exercise.loadType,
         metricType: e.exercise.metricType,
         loadSemantics: e.exercise.loadSemantics,
