@@ -72,7 +72,9 @@ test("uses a deployed action reference and returns a friendly saved-operation re
   await githubButton.click();
   const actionResponse = await actionResponsePromise;
 
-  expect(actionResponse.status()).toBe(303);
+  // Next 16.3 fetch actions carry redirects in x-action-redirect with a
+  // successful response; ordinary non-JavaScript form redirects still use 303.
+  expect(actionResponse.status()).toBe(200);
   expect(actionResponse.request().headers()["next-action"]).toBe(actionId);
   expect(actionResponse.headers()["x-action-redirect"]).toMatch(
     /^https:\/\/github\.com\/login\/oauth\/authorize\?.*;push$/
@@ -165,19 +167,15 @@ if (!process.env.PLAYWRIGHT_PRODUCTION_BASE_URL) {
       node: Record<
         string,
         {
-          workers: Record<
-            string,
-            { exportedName: string; filename: string }
-          >;
+          exportedName: string;
+          filename: string;
         }
       >;
     };
+    // Next 16.3 records source identity on the action, outside its workers.
     const actionId = Object.entries(manifest.node).find(([, action]) =>
-      Object.values(action.workers).some(
-        (worker) =>
-          worker.exportedName === "logSet" &&
-          worker.filename.endsWith("src/app/actions/sessions.ts")
-      )
+      action.exportedName === "logSet" &&
+      action.filename === "src/app/actions/sessions.ts"
     )?.[0];
     expect(actionId).toBeTruthy();
 
