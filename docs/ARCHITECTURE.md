@@ -355,7 +355,9 @@ changes stored exercise meaning, prescriptions, history or workout timing.
 
 The [Program muscle map](PROGRAM_MUSCLE_MAP.md) is a read-only projection of the
 owner's active Program through the existing presentation loader. Exact exercise
-primary/secondary mappings feed shared pure aggregation; working-set bands,
+identities resolve a versioned coverage policy in `exercise-muscle-coverage.ts`,
+falling back to saved primary/secondary mappings when not reviewed. These roles
+feed shared pure aggregation; working-set bands and numeric overlays,
 front/back regions and artwork are shared presentation assets. Supporting counts
 remain separate and missing mappings remain explicit. No History, prescription,
 Coach, schema or recovery boundary changes.

@@ -1,3 +1,4 @@
+import type { CoverageReview } from "@/lib/exercise-muscle-coverage";
 import type { FroggyFormDemo } from "@/lib/froggy-form-demo";
 import {
   hasGeneratedOverviewWarmupItems,
@@ -34,6 +35,7 @@ export type ProgramPresentationSource = {
           primary: string[];
           supporting: string[];
           catalogReviewed: boolean;
+          coverageReview?: CoverageReview;
         };
       };
       orderIdx: number;

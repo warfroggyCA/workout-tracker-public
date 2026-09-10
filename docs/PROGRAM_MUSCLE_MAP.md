@@ -7,8 +7,11 @@ Program in application code and has no mutation endpoint.
 
 ## Meaning
 
-- Red is planned working sets attributed by each exercise's **saved primary
-  muscle mapping**. Supporting work uses its saved secondary mapping, separately.
+- Red and the translucent number are **planned direct working sets** across
+  selected days. Reviewed exact variants use the coverage-v2 target/support policy;
+  unmatched variants retain saved primary/secondary catalog roles with a warning.
+  The number is not an exercise count, per-side count, or an activation layer.
+  One number per paired region avoids implying separate left/right prescriptions.
 - Supporting sets never become full direct sets. A duplicate or aliased muscle is
   counted once per slot; primary takes precedence when both roles name it.
 - Repeated occurrences of an exact exercise remain separate slots. Warm-ups,
@@ -25,8 +28,9 @@ Program in application code and has no mutation endpoint.
   training adequacy, an ACSM score or a Coach recommendation.
 
 Missing or invalid prescriptions contribute no invented sets and remain flagged.
-Unknown muscle labels retain textual counts and details without an invented body
-region. Missing primary and unreviewed catalog mappings are disclosed. An empty
+Unknown muscle labels, broad unspecified groups and deep muscles retain textual
+counts and details without an invented surface region. Missing primary, unreviewed
+coverage roles and unreviewed catalog records are disclosed. An empty
 supporting list means no supporting mapping is recorded, not no involvement.
 Catalog review does not certify the anatomical role classification.
 
@@ -55,10 +59,14 @@ active workout snapshots, recommendations or recorded sets.
 
 ## Shared foundation
 
+- `src/lib/exercise-muscle-coverage.ts`: coverage-v2 exact-variant role policy and
+  reference notes, resolved server-side from existing strict identity guards,
+  independently of the exercise-demo pilot flag. Stored catalog arrays remain
+  unchanged; no database backfill is needed.
 - `src/lib/muscle-coverage.ts`: display aliases, stable labels, pure aggregation,
   role distinction and fixed colour bands. `aggregateMuscleWork(work, dayIds)`
   supports one day, multiple days, all days (omitted filter), or none (empty set).
-- `src/lib/froggy-muscle-regions.json`: approved front/back path coordinates.
+- `src/lib/froggy-muscle-regions.json`: front/back paths and numeric-label anchors.
 - `src/components/muscle-map/froggy-muscle-map.tsx`: reusable artwork surface,
   keyboard/touch region toggles, teal selection plus white contrast outline.
   Omitting `onToggle` yields a noninteractive view.
@@ -69,21 +77,81 @@ active workout snapshots, recommendations or recorded sets.
 Calf overlays are restricted to the rear view and inset to the visible calf
 silhouette; the front shin is not painted as calf coverage.
 
-The current art is an approved raster front/back concept with schematic SVG
-regions, not a rotatable anatomical 3D model. Broad chest, core and shoulder labels
-do not assert upper/lower or individual-head coverage. Broad `back`, forearm/grip,
-and other unsupported labels remain in textual details. The raster sheet retains
-its neutral background; a genuinely transparent cutout will require an artwork
-mask or a transparent render when compact day summaries are implemented. Existing
-clothed exercise-demo files, motion, bindings and configuration are unchanged.
+The art is an approved raster concept with **23 schematic surface regions**, not a
+rotatable anatomical 3D model. New regions distinguish anterior/lateral/posterior
+delts, anterior forearm flexors, posterior extensors, brachioradialis, obliques,
+upper traps, serratus, hip adductors, side glutes and tibialis anterior. The broad
+catalog labels shoulders, core and forearms are deliberately text-only rather
+than silently attributing sets to every subdivision. Transversus, rotator cuff
+and hip flexors are also text-only. Unworked surface regions stay skin coloured
+and remain available to mouse, touch and keyboard selection.
 
-Compact day-title summaries, finer anatomical mapping, gap analysis, suggestions,
-and automatic Program changes are outside this release.
+Chest, quadriceps, hamstrings and calves remain grouped. Upper/middle back combines
+scapular retractors; side-glute and forearm patches represent groups, not every
+individual muscle or its precise attachment. Overlays approximate a stylized
+concept silhouette, and the model cannot establish anatomical certification.
+Incline pressing keeps one chest count and explains clavicular emphasis without
+invented regional percentages or isolated upper-chest coverage. A calf synergy
+in a knee curl refers to gastrocnemius, not every member of the calf group.
+
+The neutral raster background remains; compact transparent day summaries will
+need a cutout or transparent render. Existing clothed exercise-demo files, motion,
+bindings and configuration are unchanged. Gap analysis, suggestions, automatic
+Program changes and compact summaries remain outside this release.
+
+## Coverage review and sources
+
+Coverage-v2 covers the 21 existing exact demo variants. Direct means a chosen
+training target; supporting includes synergists and selected stabilizers. This
+boundary is an editorial interpretation, not a universally standardized division
+or a measured activation threshold. A compound exercise can train an assisting
+muscle without its sets being counted as full direct sets here. Supporting lists
+are not an exhaustive inventory of every stabilizer. The UI exposes a per-exercise
+“Why this mapping?” note and the existing exercise reference.
+
+The policy reuses identity eligibility from `matchFroggyFormDemo(exercise, true)`
+to avoid a second set of variant-matching rules. No environment flag is consulted.
+Unknown, custom, unreviewed or conflicting identities fall back to their saved
+catalog mappings. Future animation-version changes must retain or explicitly
+update coverage policy keys; the exhaustive TypeScript record guards this.
+
+Reference basis (accessed 2026-09-10):
+
+- [NCBI forearm anatomy](https://www.ncbi.nlm.nih.gov/books/NBK536975/): flexor and
+  extensor compartments and the distinct elbow-flexion role of brachioradialis.
+- [ACE exercise taxonomy and lateral raise](https://www.acefitness.org/resources/everyone/exercise-library/26/lateral-raise/): practical muscle groups and shoulder mechanics.
+- [NASM incline press](https://www.nasm.org/resource-center/exercise-library/incline-barbell-bench-press),
+  [bench press](https://www.nasm.org/resource-center/exercise-library/barbell-bench-press),
+  [pulldown](https://www.nasm.org/resource-center/blog/training/the-biomechanics-of-the-lat-pulldown-muscles-grip-and-form),
+  and [goblet squat](https://www.nasm.org/resource-center/exercise-library/goblet-squat).
+- Catalyst Athletics [RDL](https://www.catalystathletics.com/exercise/101/Romanian-Deadlift-RDL/),
+  [squat](https://www.catalystathletics.com/exercise/77/Back-Squat/),
+  [press](https://www.catalystathletics.com/exercise/90/Press/),
+  [row](https://www.catalystathletics.com/exercise/171/Bent-Row/), and
+  [split squat](https://www.catalystathletics.com/exercise/173/Bulgarian-Split-Squat/).
+- Muscle & Strength [incline curl](https://www.muscleandstrength.com/exercises/incline-dumbbell-curl.html),
+  [EZ curl](https://www.muscleandstrength.com/exercises/ez-bar-curl.html),
+  [Zottman curl](https://www.muscleandstrength.com/exercises/zottman-curl.html),
+  [reverse fly](https://www.muscleandstrength.com/exercises/dumbbell-reverse-fly-on-incline-bench.html), and
+  [dumbbell bench](https://www.muscleandstrength.com/exercises/dumbbell-bench-press.html).
+- [Standing cable curl](https://exrx.net/WeightExercises/Hamstrings/CBStandingLegCurl),
+  [rope pushdown](https://www.strengthlog.com/tricep-pushdown-with-rope/),
+  [supported row](https://www.muscleandfitness.com/exercise/workouts/back-exercises/thirty-degree-incline-dumbbell-row/), and
+  [single-leg calf raise](https://www.muscleandfitness.com/exercise/workouts/leg-exercises/single-leg-standing-dumbbell-calf-raise/).
+- [Harvard dead bug](https://www.health.harvard.edu/exercise-and-fitness/the-many-benefits-of-the-dead-bug) and
+  [ACE kettlebell carry reference](https://www.acefitness.org/continuing-education/certified/october-2022/8147/kettlebells-kick-butt-in-more-ways-than-one/).
+
+Interpretation limits: grip and neutral-wrist stabilization are supporting roles,
+including EZ curls whose reference lists no secondary muscles. The deliberately
+pronated Zottman descent is treated as a brachioradialis target; its reference
+lists forearms broadly as secondary, a difference disclosed in the UI. The carry
+uses obliques as the chosen anti-lateral-flexion target; this does not isolate them.
+No EMG percentages or ACSM adequacy scores are inferred from these descriptions.
 
 ## Verification
 
 ```sh
-npx vitest run tests/unit/muscle-coverage.test.ts tests/unit/muscle-coverage-db.test.ts tests/unit/program-presentation.test.ts tests/unit/program-presentation-service.test.ts tests/unit/froggy-form-demo.test.ts
+npx vitest run tests/unit/exercise-muscle-coverage.test.tsx tests/unit/muscle-coverage.test.ts tests/unit/muscle-coverage-db.test.ts tests/unit/program-presentation.test.ts tests/unit/program-presentation-service.test.ts tests/unit/froggy-form-demo.test.ts
 npm run typecheck
 npm run lint
 npm run build
@@ -104,6 +172,6 @@ E2E_PORT=3197 node scripts/run-e2e-server.mjs --production --froggy-form-demo
 
 Use Dev login with `owner@example.com`, then open `/program/muscles`. The fixture
 contains synthetic data. Verify desktop and narrow phone layout, direct taps,
-keyboard toggles, red plus selection contrast, All days, additive muscles, Clear
+keyboard toggles, forearm inspection, direct-set numbers, red plus selection contrast, All days, additive muscles, Clear
 all, the three detail filters, no-day inspection, disclosure expansion, refresh
 and Program-day links. Do not seed or mutate a live database for verification.

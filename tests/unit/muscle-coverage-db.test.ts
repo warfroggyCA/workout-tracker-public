@@ -31,11 +31,14 @@ it("loads owner-scoped saved Program roles and matches independent SQL working-s
       .insert(exercises)
       .values({
         name: "Synthetic press",
-        userId: ownerId,
+        userId: null,
+        variantKey: "barbell_bench_press",
+        variantAttributes: {},
+        isUnilateral: false,
         movementPattern: "horizontal_push",
         primaryMuscles: ["chest"],
         secondaryMuscles: ["triceps"],
-        loadType: "bodyweight",
+        loadType: "barbell",
         catalogReviewed: true,
       })
       .returning();
@@ -87,6 +90,16 @@ it("loads owner-scoped saved Program roles and matches independent SQL working-s
     const program = await getActiveProgramPresentation(database.db, ownerId);
     expect(program).not.toBeNull();
     const totals = aggregateMuscleWork(programMuscleWork(program!));
+    expect(
+      program!.days[0].slots[0].exercise.muscleMapping?.coverageReview?.version,
+    ).toBe("coverage-v2");
+    expect(totals.frontdelts).toMatchObject({ direct: 0, supporting: 7 });
+    // Presentation-specific refinement does not rewrite the stored catalog roles.
+    const storedPress = (await database.db.select().from(exercises)).find(
+      (e) => e.id === press.id,
+    )!;
+    expect(storedPress.primaryMuscles).toEqual(["chest"]);
+    expect(storedPress.secondaryMuscles).toEqual(["triceps"]);
     const independent = await database.client.query<{
       direct_sets: number;
       supporting_sets: number;

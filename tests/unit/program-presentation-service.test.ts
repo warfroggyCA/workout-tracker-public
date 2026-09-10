@@ -95,6 +95,36 @@ describe("saved Program presentation loader", () => {
     );
   });
 
+  it("projects reviewed roles and provenance while preserving stored catalog fields", async () => {
+    const day = template("reviewed", null, 0);
+    const coverageReview = {
+      version: "coverage-v2",
+      source: "https://example.org/reference",
+      note: "Synthetic reviewed classification",
+    };
+    Object.assign(day.slots[0].exercise, {
+      primaryMuscles: ["shoulders"],
+      secondaryMuscles: [],
+      catalogReviewed: true,
+      coverageMapping: {
+        primary: ["sidedelts"],
+        supporting: ["uppertraps"],
+        coverageReview,
+      },
+    });
+    const before = structuredClone(day);
+    programMocks.getTemplatesWithSlots.mockResolvedValue([day]);
+    const db = { query: { supersetGroups: { findMany: vi.fn() } } };
+    const result = await getActiveProgramPresentation(db as never, "owner");
+    expect(result?.days[0].slots[0].exercise.muscleMapping).toEqual({
+      primary: ["sidedelts"],
+      supporting: ["uppertraps"],
+      catalogReviewed: true,
+      coverageReview,
+    });
+    expect(day).toEqual(before);
+  });
+
   it("does not issue an empty superset query", async () => {
     programMocks.getTemplatesWithSlots.mockResolvedValue([
       template("day-1", null, 0),
