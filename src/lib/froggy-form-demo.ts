@@ -17,7 +17,7 @@ const BINDINGS = {
   single_leg_dumbbell_calf_raise: { key: "single-leg-dumbbell-calf-raise-v133", load: "dumbbell", unilateral: true },
   dead_bug: { key: "dead-bug-v133", load: "bodyweight" },
   zottman_curl: { key: "zottman-curl-v133", load: "dumbbell" },
-  kettlebell_suitcase_carry: { key: "kettlebell-suitcase-carry-v133", load: "kettlebell", unilateral: true },
+  kettlebell_suitcase_carry: { key: "kettlebell-suitcase-carry-v133", load: "kettlebell", unilateral: true, allowMigratedEmptyAttributes: true },
   dumbbell_lateral_raise: { key: "standing-dumbbell-lateral-raise-v138", load: "dumbbell" },
   dumbbell_bench_press: { key: "flat-dumbbell-bench-press-v138", load: "dumbbell" },
 } as const;
@@ -52,7 +52,11 @@ export function matchFroggyFormDemo(
   const unilateral = "unilateral" in binding && binding.unilateral;
   if (exercise.isUnilateral !== unilateral) return null;
   const attributes = Object.keys(exercise.variantAttributes);
-  if (unilateral ? attributes.length !== 1 || exercise.variantAttributes.laterality !== "unilateral" : attributes.length !== 0) return null;
+  // Migration 0087 stores carry laterality only in is_unilateral. Do not require
+  // rewriting that reviewed catalog record to match the newer seed representation.
+  const migratedEmptyAttributes = "allowMigratedEmptyAttributes" in binding &&
+    binding.allowMigratedEmptyAttributes && attributes.length === 0;
+  if (unilateral ? !migratedEmptyAttributes && (attributes.length !== 1 || exercise.variantAttributes.laterality !== "unilateral") : attributes.length !== 0) return null;
   return { key: binding.key, exerciseId: exercise.id };
 }
 

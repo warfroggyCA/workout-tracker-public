@@ -193,8 +193,37 @@ it.each([
     { loadType: "barbell" }, { isUnilateral: !exercise.isUnilateral },
     { userId: "synthetic-owner" }, { catalogReviewed: false },
     { variantAttributes: { ...exercise.variantAttributes, grip: "neutral" } },
-    ...(exercise.isUnilateral ? [{ variantAttributes: {} }] : []),
+    ...(exercise.isUnilateral && exercise.variantKey !== "kettlebell_suitcase_carry" ? [{ variantAttributes: {} }] : []),
   ]) expect(matchFroggyFormDemo({ ...exercise, ...patch }, true)).toBeNull();
+});
+
+describe("migrated kettlebell suitcase carry identity", () => {
+  // Migration 0087 records laterality in is_unilateral and writes empty attributes.
+  // Fresh catalog seeding also includes laterality in the attribute object.
+  const migratedCarry: FroggyCatalogIdentity = {
+    ...curl, variantKey: "kettlebell_suitcase_carry", loadType: "kettlebell",
+    isUnilateral: true, variantAttributes: {},
+  };
+
+  it("shows the same approved carry for the migrated and seeded representations", () => {
+    for (const variantAttributes of [{}, { laterality: "unilateral" }]) {
+      expect(matchFroggyFormDemo({ ...migratedCarry, variantAttributes }, true)).toEqual({
+        key: "kettlebell-suitcase-carry-v133", exerciseId: migratedCarry.id,
+      });
+    }
+    expect(matchFroggyFormDemo(migratedCarry, false)).toBeNull();
+  });
+
+  it.each([
+    { isUnilateral: false }, { loadType: "dumbbell" },
+    { variantKey: "dumbbell_suitcase_carry" }, { variantKey: "farmer_carry" },
+    { catalogReviewed: false }, { userId: "synthetic-owner" },
+    { variantAttributes: { laterality: "bilateral" } },
+    { variantAttributes: { laterality: "unilateral", grip: "overhead" } },
+    { variantAttributes: { position: "overhead" } },
+  ])("still rejects conflicting carry identity %j", patch => {
+    expect(matchFroggyFormDemo({ ...migratedCarry, ...patch }, true)).toBeNull();
+  });
 });
 
 it.each([
