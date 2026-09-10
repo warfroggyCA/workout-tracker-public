@@ -48,7 +48,7 @@ export function ProgramMuscleMap({
   const keys = [
     ...MUSCLE_KEYS,
     ...Object.keys(all)
-      .filter((k) => !hasMuscleArtwork(k))
+      .filter((k) => !MUSCLE_KEYS.some((known) => known === k))
       .sort(),
   ];
   const detail = all[focused] ?? {
@@ -68,6 +68,7 @@ export function ProgramMuscleMap({
     (row) =>
       row.missingPrimary ||
       !row.catalogReviewed ||
+      !row.coverageReview ||
       row.sets === null ||
       [...row.direct, ...row.supporting].some((k) => !hasMuscleArtwork(k)),
   );
@@ -177,7 +178,7 @@ export function ProgramMuscleMap({
             onToggle={toggleMuscle}
           />
           <div className={styles.legend}>
-            <span>Planned direct sets</span>
+            <span>Numbers + red = direct sets</span>
             {DIRECT_SET_SCALE.map((b) => (
               <span key={b.label}>
                 <i style={{ backgroundColor: b.color }} />
@@ -279,9 +280,9 @@ export function ProgramMuscleMap({
                 </div>
                 {!hasMuscleArtwork(focused) && (
                   <p className={styles.notice}>
-                    This saved label has no precise region in the current
-                    artwork. Its sets are listed here, without guessing a
-                    location.
+                    This is a deep muscle group or a broad label without a
+                    precise surface region. Its sets remain available here; the
+                    illustration does not guess a location.
                   </p>
                 )}
                 {rows.length ? (
@@ -301,17 +302,33 @@ export function ProgramMuscleMap({
                         </h4>
                         {dayRows.map((row) => (
                           <div key={row.slotId} className={styles.exercise}>
-                            <span>
+                            <div>
                               {row.exerciseName}
                               <small>
                                 {row.direct.includes(focused)
-                                  ? "Direct · saved primary mapping"
-                                  : "Supporting · saved secondary mapping"}
+                                  ? "Direct target"
+                                  : "Supporting role"}
+                                {row.coverageReview
+                                  ? " · reviewed coverage"
+                                  : " · catalog mapping only"}
                                 {!row.catalogReviewed
                                   ? " · catalog not reviewed"
                                   : ""}
                               </small>
-                            </span>
+                              {row.coverageReview && (
+                                <details className={styles.mappingNote}>
+                                  <summary>Why this mapping?</summary>
+                                  <p>{row.coverageReview.note}</p>
+                                  <a
+                                    href={row.coverageReview.source}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    Exercise reference ↗
+                                  </a>
+                                </details>
+                              )}
+                            </div>
                             <b>
                               {row.sets === null
                                 ? "Sets unknown"
@@ -343,8 +360,8 @@ export function ProgramMuscleMap({
                   add together; tap again to remove.
                 </p>
                 <p>
-                  Day buttons change the shading. Muscle details always look
-                  across your full Program.
+                  Day buttons change the shading and numbers. Muscle details
+                  always look across your full Program.
                 </p>
               </div>
             )}
@@ -356,11 +373,18 @@ export function ProgramMuscleMap({
                   : ""}
               </summary>
               <p>
-                Red counts prescribed working sets assigned to a muscle by the
-                exercise’s saved primary mapping. Supporting sets use the saved
-                secondary mapping and are kept separate. One set can target
-                several muscles; these totals should not be added together as a
-                Program set total.
+                Numbers and red shading show planned direct sets across the
+                selected days. A 6 means six sets, not six exercises or an
+                activation score. Each paired region has one number; it is not a
+                separate count for each side.
+              </p>
+              <p>
+                Reviewed exercise variants use a versioned target/supporting
+                classification with reference notes. Other exercises retain
+                their saved catalog mappings, flagged below. Supporting sets
+                stay separate and never add to the red number. One set can
+                target several muscles, so muscle totals should not be added
+                together as a Program set total.
               </p>
               <p>
                 Warm-ups are excluded. Each slot’s prescription is counted once,
@@ -370,11 +394,14 @@ export function ProgramMuscleMap({
                 effectiveness or proof of adequate training.
               </p>
               <p>
-                The illustration is schematic. Broad shoulders, core and chest
-                labels do not identify individual heads or upper/lower regions.
-                Supporting mappings may be incomplete; zero means no mapped
-                sets, not no involvement. Catalog review is not anatomical
-                certification.
+                This is a schematic training map with 23 surface regions, not an
+                anatomical atlas. Forearm compartments, delt regions, obliques
+                and side glutes are distinct. Chest, quadriceps, hamstrings and
+                calves remain grouped; deep muscles have text details.
+                Boundaries approximate the stylized body. Zero means no mapped
+                direct sets, not no involvement. The classifications are an
+                interpretation of exercise references, not measured activation
+                or anatomical certification.
               </p>
               {issues.length > 0 && (
                 <ul>
@@ -384,6 +411,8 @@ export function ProgramMuscleMap({
                       {[
                         row.missingPrimary && "no primary mapping",
                         !row.catalogReviewed && "catalog not reviewed",
+                        !row.coverageReview &&
+                          "coverage roles not reviewed; saved catalog mapping used",
                         row.sets === null &&
                           "working-set prescription missing or invalid",
                         ...[...row.direct, ...row.supporting]

@@ -1,19 +1,72 @@
+import artwork from "@/lib/froggy-muscle-regions.json";
 import type { ProgramPresentation } from "@/lib/program-presentation";
 
-/** Display aliases only. Exercise roles always come from the exact saved exercise. */
+/** Anatomical display groups; broad catalog terms are not silently split. */
 export const MUSCLE_REGIONS = {
   chest: {
     label: "Chest",
     aliases: ["chest", "pectorals", "pectoralis major"],
   },
-  shoulders: { label: "Shoulders", aliases: ["shoulders", "deltoids"] },
+  shoulders: {
+    label: "Shoulders (unspecified)",
+    aliases: ["shoulders", "deltoids"],
+  },
   reardelts: {
     label: "Rear delts",
     aliases: ["rear delts", "rear deltoids", "posterior deltoids"],
   },
+  frontdelts: {
+    label: "Front delts",
+    aliases: ["front delts", "anterior deltoids"],
+  },
+  sidedelts: {
+    label: "Side delts",
+    aliases: ["side delts", "lateral deltoids", "middle deltoids"],
+  },
+  abs: {
+    label: "Abdominals",
+    aliases: ["abs", "abdominals", "rectus abdominis"],
+  },
+  obliques: { label: "Obliques", aliases: ["obliques"] },
+  forearmflexors: {
+    label: "Forearm flexors / grip",
+    aliases: ["forearm flexors", "wrist flexors", "finger flexors"],
+  },
+  forearmextensors: {
+    label: "Forearm extensors",
+    aliases: ["forearm extensors", "wrist extensors"],
+  },
+  brachioradialis: {
+    label: "Outer forearm \u00b7 brachioradialis",
+    aliases: ["brachioradialis"],
+  },
+  forearms: { label: "Forearms (unspecified)", aliases: ["forearms", "grip"] },
+  adductors: {
+    label: "Inner thighs \u00b7 adductors",
+    aliases: ["adductors", "hip adductors"],
+  },
+  abductors: {
+    label: "Side glutes \u00b7 abductors",
+    aliases: ["abductors", "hip abductors", "gluteus medius"],
+  },
+  uppertraps: {
+    label: "Upper traps",
+    aliases: ["upper traps", "upper trapezius"],
+  },
+  serratus: { label: "Serratus anterior", aliases: ["serratus anterior"] },
+  tibialis: {
+    label: "Front shins \u00b7 tibialis anterior",
+    aliases: ["tibialis anterior"],
+  },
+  deepabs: {
+    label: "Deep abdominals \u00b7 transversus",
+    aliases: ["transversus abdominis"],
+  },
+  rotatorcuff: { label: "Rotator cuff", aliases: ["rotator cuff"] },
+  hipflexors: { label: "Hip flexors", aliases: ["hip flexors", "iliopsoas"] },
   biceps: { label: "Biceps", aliases: ["biceps"] },
   triceps: { label: "Triceps", aliases: ["triceps"] },
-  core: { label: "Core / abdominals", aliases: ["core", "abs", "abdominals"] },
+  core: { label: "Core (unspecified)", aliases: ["core"] },
   quads: { label: "Quadriceps", aliases: ["quads", "quadriceps"] },
   hamstrings: { label: "Hamstrings", aliases: ["hamstrings"] },
   glutes: { label: "Glutes", aliases: ["glutes", "gluteals"] },
@@ -29,7 +82,7 @@ export type MuscleRegion = keyof typeof MUSCLE_REGIONS;
 export const MUSCLE_KEYS = Object.keys(MUSCLE_REGIONS) as MuscleRegion[];
 const aliases = new Map<string, MuscleRegion>(
   MUSCLE_KEYS.flatMap((key) =>
-    MUSCLE_REGIONS[key].aliases.map(
+    [key, ...MUSCLE_REGIONS[key].aliases].map(
       (alias) => [alias, key] as [string, MuscleRegion],
     ),
   ),
@@ -48,7 +101,9 @@ export function muscleLabel(key: string): string {
   );
 }
 export function hasMuscleArtwork(key: string): key is MuscleRegion {
-  return MUSCLE_KEYS.includes(key as MuscleRegion);
+  return [...artwork.front, ...artwork.back].some(
+    (region) => region.muscle === key,
+  );
 }
 
 export type MuscleWork = {
@@ -63,6 +118,7 @@ export type MuscleWork = {
   supporting: string[];
   catalogReviewed: boolean;
   missingPrimary: boolean;
+  coverageReview?: { version: string; source: string; note: string };
 };
 export type MuscleCoverage = {
   direct: number;
@@ -109,6 +165,7 @@ export function programMuscleWork(program: ProgramPresentation): MuscleWork[] {
         supporting,
         catalogReviewed: slot.exercise.muscleMapping?.catalogReviewed === true,
         missingPrimary: direct.length === 0,
+        coverageReview: slot.exercise.muscleMapping?.coverageReview,
       };
     }),
   );

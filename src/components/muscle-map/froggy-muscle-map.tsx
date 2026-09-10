@@ -122,6 +122,28 @@ export function FroggyMuscleMap({
                       </g>
                     ))}
                 </g>
+                <g
+                  aria-hidden="true"
+                  pointerEvents="none"
+                  className={styles.setNumbers}
+                >
+                  {regions[view].map((region) => {
+                    const count = coverage[region.muscle]?.direct ?? 0;
+                    if (count <= 0) return null;
+                    return (
+                      <text
+                        key={region.muscle}
+                        x={region.label[0]}
+                        y={region.label[1]}
+                        data-set-number={region.muscle}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                      >
+                        {count}
+                      </text>
+                    );
+                  })}
+                </g>
               </g>
             </svg>
             <figcaption>{view === "front" ? "Front" : "Back"}</figcaption>

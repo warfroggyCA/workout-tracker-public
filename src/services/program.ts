@@ -1,3 +1,4 @@
+import { reviewedExerciseMuscles, type ReviewedMuscleMapping } from "@/lib/exercise-muscle-coverage";
 import { getFroggyFormDemo } from "@/services/froggy-form-demo";
 import type { FroggyFormDemo } from "@/lib/froggy-form-demo";
 import { and, eq, isNull, inArray } from "drizzle-orm";
@@ -146,6 +147,7 @@ export type TemplateWithSlots = {
       family: string | null;
       movementPattern: string;
       primaryMuscles: string[];
+      coverageMapping?: ReviewedMuscleMapping | null;
       secondaryMuscles?: string[];
       catalogReviewed?: boolean;
       loadType: string;
@@ -196,6 +198,7 @@ export async function getTemplatesWithSlots(
         family: e.exercise.family?.name ?? null,
         movementPattern: e.exercise.movementPattern,
         primaryMuscles: e.exercise.primaryMuscles,
+        coverageMapping: reviewedExerciseMuscles(e.exercise),
         secondaryMuscles: e.exercise.secondaryMuscles,
         catalogReviewed: e.exercise.catalogReviewed,
         loadType: e.exercise.loadType,

@@ -62,8 +62,9 @@ export async function getActiveProgramPresentation(
           family: exercise.family,
           movementPattern: exercise.movementPattern,
           muscleMapping: {
-            primary: exercise.primaryMuscles ?? [],
-            supporting: exercise.secondaryMuscles ?? [],
+            primary: exercise.coverageMapping?.primary ?? exercise.primaryMuscles ?? [],
+            supporting: exercise.coverageMapping?.supporting ?? exercise.secondaryMuscles ?? [],
+            ...(exercise.coverageMapping ? { coverageReview: exercise.coverageMapping.coverageReview } : {}),
             catalogReviewed: exercise.catalogReviewed === true,
           },
         },
