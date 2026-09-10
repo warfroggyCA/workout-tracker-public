@@ -321,12 +321,14 @@ async function createEquipmentRaceFixture(
 
 async function createExternalReviewFixture(label: string) {
   const fixture = await createProgramFixture(label);
+  // The import and subsequent concurrent decisions use the live clock.
+  // A fixed creation date eventually expires before the race can be tested.
   const created = await createAnalysisPackage(
     db,
     fixture.userId,
     { questionId: "program_progress", windowDays: 84 },
     {
-      now: new Date("2026-08-10T12:00:00.000Z"),
+      now: new Date(),
       packageId: crypto.randomUUID(),
       appVersion: "postgres-concurrency-test",
     },
