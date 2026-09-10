@@ -929,3 +929,10 @@ offline logging, reconnect, and reload. All fixtures are synthetic and disposabl
 
 See [the pilot contract and local verification steps](FROGGY_FORM_DEMO.md) for
 the opt-in Froggy exercise viewers, synthetic fixture and browser checks.
+
+## Program muscle-map verification
+
+See [the muscle-map contract](PROGRAM_MUSCLE_MAP.md#verification) for focused
+calculation/database checks and the signed-in desktop/mobile workflow using the
+existing disposable Froggy fixture. This feature requires no migration or seed
+change in a live environment.

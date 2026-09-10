@@ -61,6 +61,11 @@ export async function getActiveProgramPresentation(
           name: exercise.name,
           family: exercise.family,
           movementPattern: exercise.movementPattern,
+          muscleMapping: {
+            primary: exercise.primaryMuscles ?? [],
+            supporting: exercise.secondaryMuscles ?? [],
+            catalogReviewed: exercise.catalogReviewed === true,
+          },
         },
         orderIdx: slot.orderIdx,
         supersetGroupId: slot.supersetGroupId,
