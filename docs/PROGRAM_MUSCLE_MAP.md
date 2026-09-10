@@ -37,7 +37,9 @@ Catalog review does not certify the anatomical role classification.
 ## Interaction and freshness
 
 Day buttons independently toggle the shading; All days toggles all/none. Muscle
-selection is additive and independent of days. A second tap deselects. The native
+selection is additive and independent of days. A second tap deselects and clears
+the temporary hover/focus preview immediately, even while the pointer remains on
+the region. Keyboard focus retains a distinct dashed indicator. The native
 muscle selector can inspect any region, including unmapped labels, without
 requiring a day selection. Select/Deselect is a large-touch-target alternative.
 Selected chips focus an already selected muscle. Clear all resets both selection

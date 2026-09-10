@@ -124,6 +124,11 @@
   cursor: pointer;
   outline: none;
 }
+/* Keyboard location remains visible after the selection outline is removed. */
+.region:focus-visible {
+  outline: 2px dashed #005f70;
+  outline-offset: 3px;
+}
 .legend {
   display: flex;
   justify-content: center;
