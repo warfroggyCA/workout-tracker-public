@@ -1,0 +1,28 @@
+.stage { position: relative; container-type: inline-size; aspect-ratio: 1; overflow: hidden; border-radius: 12px; background: #555c59; }
+.video { display: block; width: 100%; height: 100%; object-fit: contain; }
+.cue { position: absolute; left: 1.48%; right: 1.48%; top: .37%; min-height: 6.3cqw; border-radius: 1.4cqw; background: #145c45; display: flex; align-items: stretch; gap: 1.85cqw; padding-right: 1.85cqw; font-weight: 650; font-size: 4.05cqw; line-height: 1.15; color: #f0f5f3; pointer-events: none; }
+.tag { display: flex; align-items: center; justify-content: center; gap: 1.05cqw; flex: 0 0 19cqw; font-size: 3.15cqw; color: #fff; background: transparent; border-radius: 1.4cqw 0 0 1.4cqw; font-weight: 850; }
+.avoid { background: #a32932; color: #fff; }
+.tag svg { width: 4.5cqw; height: 4.5cqw; flex: none; }
+.cueText { align-self: center; padding: .6cqw 0; }
+.pointer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+.tapTarget { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; border-radius: 12px; }
+.tapTarget:focus-visible { outline: 3px solid white; outline-offset: -5px; }
+.playbackState { position: absolute; bottom: 10px; right: 10px; border-radius: 6px; padding: 4px 8px; background: rgb(20 34 31 / 90%); color: white; font-size: 12px; pointer-events: none; }
+
+/* Replay only when the banner message changes; body callouts remain mounted. */
+.cue { animation: cueReveal 420ms cubic-bezier(.2, .65, .3, 1) both; }
+@keyframes cueReveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cue { animation: none; }
+}
+
+/* Inset coaching card leaves visible space around the new batch. */
+.floatingCue { top: 2%; left: 2%; right: 2%; min-height: max(36px, 8.6cqw); border: 1px solid #a4d9b7; font-size: clamp(12px, 3.4cqw, 20px); padding: 1cqw 1.8cqw; gap: 1.8cqw; }
+.floatingCue.avoid { border-color: #f4aaa3; }
+.floatingCue .tag { flex-basis: auto; font-size: inherit; }
+.floatingCue .tag svg { width: clamp(18px, 4.5cqw, 30px); height: clamp(18px, 4.5cqw, 30px); }

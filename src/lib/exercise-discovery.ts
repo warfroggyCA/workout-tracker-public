@@ -1,3 +1,4 @@
+import type { FroggyFormDemo } from "@/lib/froggy-form-demo";
 export const EQUIPMENT_FILTERS = [
   "barbell",
   "dumbbell",
@@ -60,6 +61,7 @@ export type ExerciseMediaPreview = {
 };
 
 export type ExerciseDiscoveryItem = {
+  formDemo?: FroggyFormDemo | null;
   id: string;
   name: string;
   activityClass?: string;
@@ -118,6 +120,7 @@ type DiscoveryLibraryRecord = Pick<
   | "unavailableReason"
   | "missingEquipment"
   | "constraintBlocked"
+  | "formDemo"
 >;
 
 /** Explicit projection keeps source, rights, and provenance bookkeeping out. */
@@ -131,6 +134,7 @@ export function exerciseDiscoveryItemFromLibrary(
   > = {}
 ): ExerciseDiscoveryItem {
   return {
+    formDemo: exercise.formDemo,
     id: exercise.id,
     name: exercise.name,
     activityClass: exercise.activityClass,

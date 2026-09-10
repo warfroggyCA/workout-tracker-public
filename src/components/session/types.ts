@@ -1,3 +1,4 @@
+import type { FroggyFormDemo } from "@/lib/froggy-form-demo";
 import type { PlateMathConfig, IncrementalLoadConfig } from "@/engine/plate-math";
 import type { RoutineWarmupSet } from "@/db/schema/user";
 import type { LiveCoachMessage } from "@/services/live-coaching";
@@ -47,6 +48,7 @@ export type SetAcknowledgementReceipt = {
 };
 
 export type SessionExerciseData = {
+  formDemo?: FroggyFormDemo | null;
   id: string;
   exerciseId: string;
   /** Stable Program-slot identity retained when this workout was started. */

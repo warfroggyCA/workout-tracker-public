@@ -1,4 +1,6 @@
 "use client";
+import { hasFroggyFormDemo } from "@/lib/froggy-form-demo";
+import { FroggyFormDemoProvider, FroggyFormDemoTrigger, FroggyFormDemoPanel } from "@/components/exercises/froggy-form-demo";
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
@@ -168,6 +170,9 @@ function ExerciseVariantButton({
             ? ` · ${item.primaryMuscles.map(label).join(", ")}`
             : ""}
         </span>
+        {hasFroggyFormDemo(item.formDemo, item.id) && (
+          <span className="block text-xs font-medium text-primary">Form demo available</span>
+        )}
         {annotation && (
           <span className="mt-0.5 block text-xs font-medium text-primary">
             {annotation.label}
@@ -223,6 +228,7 @@ function ExerciseDetail({
   }, [item.id]);
 
   return (
+    <FroggyFormDemoProvider demo={item.formDemo} exerciseId={item.id} initiallyOpen>
     <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col">
       <div className="mb-3">
         <Button type="button" variant="ghost" className="-ml-2" onClick={onBack}>
@@ -239,12 +245,12 @@ function ExerciseDetail({
             {item.recentRank != null && <Badge variant="secondary">Recently used</Badge>}
           </div>
           <div className="mt-3 flex items-center gap-3">
-            <ExerciseFamilyIcon
+            <FroggyFormDemoTrigger><ExerciseFamilyIcon
               family={item.family}
               exerciseName={item.name}
               movementPattern={item.movementPattern}
               media={item.media}
-            />
+            /></FroggyFormDemoTrigger>
             <h3
               ref={titleRef}
               tabIndex={-1}
@@ -264,11 +270,13 @@ function ExerciseDetail({
           <h4 id={`media-${item.id}`} className="mb-2 font-semibold">
             Reference media
           </h4>
-          <ExerciseReferenceMedia
+          {hasFroggyFormDemo(item.formDemo, item.id) ? (
+            <FroggyFormDemoPanel />
+          ) : <ExerciseReferenceMedia
             key={item.id}
             media={item.media}
             exerciseName={item.name}
-          />
+          />}
         </section>
 
         {annotation && (
@@ -378,6 +386,7 @@ function ExerciseDetail({
         </Button>
       </footer>
     </div>
+    </FroggyFormDemoProvider>
   );
 }
 

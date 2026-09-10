@@ -1,3 +1,5 @@
+import { getFroggyFormDemo } from "@/services/froggy-form-demo";
+import type { FroggyFormDemo } from "@/lib/froggy-form-demo";
 import { and, eq, isNull, inArray } from "drizzle-orm";
 import type { Db } from "@/db";
 import {
@@ -138,6 +140,7 @@ export type TemplateWithSlots = {
   slots: Array<{
     slot: typeof workoutTemplateExercises.$inferSelect;
     exercise: {
+      formDemo?: FroggyFormDemo | null;
       id: string;
       name: string;
       family: string | null;
@@ -185,6 +188,7 @@ export async function getTemplatesWithSlots(
     slots: t.exercises.map((e) => ({
       slot: e,
       exercise: {
+        formDemo: getFroggyFormDemo(e.exercise),
         id: e.exercise.id,
         name: e.exercise.name,
         family: e.exercise.family?.name ?? null,

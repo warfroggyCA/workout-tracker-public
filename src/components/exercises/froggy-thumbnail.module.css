@@ -1,0 +1,88 @@
+.sprite {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 800%;
+  height: 900%;
+  max-width: none;
+  pointer-events: none;
+  animation: froggy-icon 6s steps(1, end) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sprite { animation: none; visibility: hidden; }
+}
+@keyframes froggy-icon {
+  0.000000% { transform: translate(0.000000%, 0.000000%); }
+  1.388889% { transform: translate(-12.500000%, 0.000000%); }
+  2.777778% { transform: translate(-25.000000%, 0.000000%); }
+  4.166667% { transform: translate(-37.500000%, 0.000000%); }
+  5.555556% { transform: translate(-50.000000%, 0.000000%); }
+  6.944444% { transform: translate(-62.500000%, 0.000000%); }
+  8.333333% { transform: translate(-75.000000%, 0.000000%); }
+  9.722222% { transform: translate(-87.500000%, 0.000000%); }
+  11.111111% { transform: translate(0.000000%, -11.111111%); }
+  12.500000% { transform: translate(-12.500000%, -11.111111%); }
+  13.888889% { transform: translate(-25.000000%, -11.111111%); }
+  15.277778% { transform: translate(-37.500000%, -11.111111%); }
+  16.666667% { transform: translate(-50.000000%, -11.111111%); }
+  18.055556% { transform: translate(-62.500000%, -11.111111%); }
+  19.444444% { transform: translate(-75.000000%, -11.111111%); }
+  20.833333% { transform: translate(-87.500000%, -11.111111%); }
+  22.222222% { transform: translate(0.000000%, -22.222222%); }
+  23.611111% { transform: translate(-12.500000%, -22.222222%); }
+  25.000000% { transform: translate(-25.000000%, -22.222222%); }
+  26.388889% { transform: translate(-37.500000%, -22.222222%); }
+  27.777778% { transform: translate(-50.000000%, -22.222222%); }
+  29.166667% { transform: translate(-62.500000%, -22.222222%); }
+  30.555556% { transform: translate(-75.000000%, -22.222222%); }
+  31.944444% { transform: translate(-87.500000%, -22.222222%); }
+  33.333333% { transform: translate(0.000000%, -33.333333%); }
+  34.722222% { transform: translate(-12.500000%, -33.333333%); }
+  36.111111% { transform: translate(-25.000000%, -33.333333%); }
+  37.500000% { transform: translate(-37.500000%, -33.333333%); }
+  38.888889% { transform: translate(-50.000000%, -33.333333%); }
+  40.277778% { transform: translate(-62.500000%, -33.333333%); }
+  41.666667% { transform: translate(-75.000000%, -33.333333%); }
+  43.055556% { transform: translate(-87.500000%, -33.333333%); }
+  44.444444% { transform: translate(0.000000%, -44.444444%); }
+  45.833333% { transform: translate(-12.500000%, -44.444444%); }
+  47.222222% { transform: translate(-25.000000%, -44.444444%); }
+  48.611111% { transform: translate(-37.500000%, -44.444444%); }
+  50.000000% { transform: translate(-50.000000%, -44.444444%); }
+  51.388889% { transform: translate(-62.500000%, -44.444444%); }
+  52.777778% { transform: translate(-75.000000%, -44.444444%); }
+  54.166667% { transform: translate(-87.500000%, -44.444444%); }
+  55.555556% { transform: translate(0.000000%, -55.555556%); }
+  56.944444% { transform: translate(-12.500000%, -55.555556%); }
+  58.333333% { transform: translate(-25.000000%, -55.555556%); }
+  59.722222% { transform: translate(-37.500000%, -55.555556%); }
+  61.111111% { transform: translate(-50.000000%, -55.555556%); }
+  62.500000% { transform: translate(-62.500000%, -55.555556%); }
+  63.888889% { transform: translate(-75.000000%, -55.555556%); }
+  65.277778% { transform: translate(-87.500000%, -55.555556%); }
+  66.666667% { transform: translate(0.000000%, -66.666667%); }
+  68.055556% { transform: translate(-12.500000%, -66.666667%); }
+  69.444444% { transform: translate(-25.000000%, -66.666667%); }
+  70.833333% { transform: translate(-37.500000%, -66.666667%); }
+  72.222222% { transform: translate(-50.000000%, -66.666667%); }
+  73.611111% { transform: translate(-62.500000%, -66.666667%); }
+  75.000000% { transform: translate(-75.000000%, -66.666667%); }
+  76.388889% { transform: translate(-87.500000%, -66.666667%); }
+  77.777778% { transform: translate(0.000000%, -77.777778%); }
+  79.166667% { transform: translate(-12.500000%, -77.777778%); }
+  80.555556% { transform: translate(-25.000000%, -77.777778%); }
+  81.944444% { transform: translate(-37.500000%, -77.777778%); }
+  83.333333% { transform: translate(-50.000000%, -77.777778%); }
+  84.722222% { transform: translate(-62.500000%, -77.777778%); }
+  86.111111% { transform: translate(-75.000000%, -77.777778%); }
+  87.500000% { transform: translate(-87.500000%, -77.777778%); }
+  88.888889% { transform: translate(0.000000%, -88.888889%); }
+  90.277778% { transform: translate(-12.500000%, -88.888889%); }
+  91.666667% { transform: translate(-25.000000%, -88.888889%); }
+  93.055556% { transform: translate(-37.500000%, -88.888889%); }
+  94.444444% { transform: translate(-50.000000%, -88.888889%); }
+  95.833333% { transform: translate(-62.500000%, -88.888889%); }
+  97.222222% { transform: translate(-75.000000%, -88.888889%); }
+  98.611111% { transform: translate(-87.500000%, -88.888889%); }
+  100% { transform: translate(0, 0); }
+}

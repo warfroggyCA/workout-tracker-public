@@ -1,3 +1,4 @@
+import { getFroggyFormDemo } from "@/services/froggy-form-demo";
 import { notFound, redirect, unstable_rethrow } from "next/navigation";
 import Link from "next/link";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
@@ -470,6 +471,7 @@ async function renderSessionPage(
       cautionBodyParts: usesPrescribedMeaning
         ? []
         : flags.get(se.exercise.movementPattern)?.bodyParts ?? [],
+      formDemo: getFroggyFormDemo(se.exercise),
       media: usesPrescribedMeaning
         ? null
         : mediaByExercise.get(se.exercise.id) ?? null,

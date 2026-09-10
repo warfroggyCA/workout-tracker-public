@@ -1,3 +1,4 @@
+import type { FroggyFormDemo } from "@/lib/froggy-form-demo";
 import {
   hasGeneratedOverviewWarmupItems,
   type TimedPrescription,
@@ -24,6 +25,7 @@ export type ProgramPresentationSource = {
       id: string;
       lineageId: string;
       exercise: {
+        formDemo?: FroggyFormDemo | null;
         id: string;
         name: string;
         family: string | null;

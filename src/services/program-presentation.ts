@@ -56,6 +56,7 @@ export async function getActiveProgramPresentation(
         id: slot.id,
         lineageId: slot.lineageId,
         exercise: {
+          formDemo: exercise.formDemo,
           id: exercise.id,
           name: exercise.name,
           family: exercise.family,
