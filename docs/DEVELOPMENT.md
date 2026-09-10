@@ -915,3 +915,8 @@ oversized-response containment, retry, complete download, and narrow WebKit
 layout. The Program editor's loaded-seconds-per-side browser case verifies the
 configuration warning clears after explicit selection, future publication,
 offline logging, reconnect, and reload. All fixtures are synthetic and disposable.
+
+## Froggy form viewer pilot
+
+See [the pilot contract and local verification steps](FROGGY_FORM_DEMO.md) for
+the opt-in Froggy exercise viewers, synthetic fixture and browser checks.

@@ -61,3 +61,12 @@ changes from private source commit
 field-observation documents from that commit are not copied into the public
 history. Follow-up review fixes are native public commits and are reviewed,
 tested, and released through this repository’s protected pull-request path.
+
+The optional Froggy form viewer redistributes modified Snow Rig character
+renders with Blender Foundation attribution and CC BY 4.0 links beside the
+assets and in the viewer. Native-rig adaptations, authored movement, equipment
+and schematic educational materials are modified. The public package includes
+portable renders, projected marker data, concise paraphrased guidance and
+synthetic fixtures only. It includes no third-party exercise video, raw
+motion-capture file, Blender authoring project, private Program inventory,
+owner review chronology or production identifiers.

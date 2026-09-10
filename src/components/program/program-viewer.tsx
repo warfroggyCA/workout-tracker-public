@@ -1,4 +1,5 @@
 "use client";
+import { FroggyFormDemoProvider, FroggyFormDemoTrigger, FroggyFormDemoPanel } from "@/components/exercises/froggy-form-demo";
 
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
@@ -237,12 +238,15 @@ export function ProgramViewer({
                     </p>
                   </div>
                 )}
-                <article className="flex items-start gap-3 rounded-xl border bg-background p-3 sm:p-4">
+                <FroggyFormDemoProvider demo={row.exercise.formDemo} exerciseId={row.exercise.id}>
+                <article className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-xl border bg-background p-3 sm:p-4">
+                  <FroggyFormDemoTrigger>
                   <ExerciseFamilyIcon
                     family={row.exercise.family}
                     exerciseName={row.exercise.name}
                     movementPattern={row.exercise.movementPattern}
                   />
+                  </FroggyFormDemoTrigger>
                   <div className="min-w-0 flex-1">
                     <h3 className="font-semibold">{row.exercise.name}</h3>
                     <p className="text-xs text-muted-foreground">
@@ -268,7 +272,9 @@ export function ProgramViewer({
                       </p>
                     )}
                   </div>
+                  <FroggyFormDemoPanel />
                 </article>
+                </FroggyFormDemoProvider>
               </div>
             );
           })}

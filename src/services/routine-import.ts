@@ -1,3 +1,5 @@
+import { getFroggyFormDemo } from "@/services/froggy-form-demo";
+import type { FroggyFormDemo } from "@/lib/froggy-form-demo";
 import { and, desc, eq, or, isNull, asc, inArray } from "drizzle-orm";
 import type { Db } from "@/db";
 import {
@@ -33,6 +35,7 @@ import { z } from "zod";
  * same computation server-side before anything persists.
  */
 export type LibraryExerciseOption = {
+  formDemo?: FroggyFormDemo | null;
   id: string;
   /** Internal catalog relationship used for strictly matched family media. */
   familyId: string | null;
@@ -134,6 +137,7 @@ export async function getLibraryWithAvailability(
         ? "blocked by current constraints"
         : null;
     return {
+      formDemo: getFroggyFormDemo(ex),
       id: ex.id,
       familyId: ex.familyId,
       name: ex.name,

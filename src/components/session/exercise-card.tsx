@@ -1,4 +1,6 @@
 "use client";
+import { FroggyFormDemoEntry } from "@/components/exercises/froggy-form-demo";
+import { hasFroggyFormDemo } from "@/lib/froggy-form-demo";
 
 import {
   useEffect,
@@ -1588,6 +1590,7 @@ export function ExerciseCard({
       warmupSets: state.warmupSets,
       setNotes: state.setNotes,
       last: null,
+      formDemo: candidate.formDemo ?? null,
       media: candidate.media ?? null,
     });
     setDraft((current) => ({
@@ -1639,6 +1642,7 @@ export function ExerciseCard({
       warmupSets: [],
       setNotes: [],
       last: null,
+      formDemo: candidate.formDemo ?? null,
       media: candidate.media ?? null,
     });
     setDraft((current) => ({
@@ -1934,6 +1938,9 @@ export function ExerciseCard({
       }}
     >
       <div className="relative overflow-hidden rounded-t-xl">
+        {hasFroggyFormDemo(exercise.formDemo, exercise.exerciseId) && (
+          <div className="absolute left-2 top-2 z-20"><FroggyFormDemoEntry demo={exercise.formDemo} exerciseId={exercise.exerciseId} presentation="dialog" /></div>
+        )}
         <button
           type="button"
           aria-label={`Remove ${exercise.name} from today`}
@@ -2008,12 +2015,12 @@ export function ExerciseCard({
             touchAction: "pan-y",
           }}
         >
-        <ExerciseFamilyIcon
+        {hasFroggyFormDemo(exercise.formDemo, exercise.exerciseId) ? <span className="size-16 shrink-0" aria-hidden="true" /> : <ExerciseFamilyIcon
           media={exercise.media}
           family={exercise.family}
           exerciseName={exercise.name}
           movementPattern={exercise.movementPattern}
-        />
+        />}
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-start gap-2">
             <h2
@@ -2915,6 +2922,7 @@ export function ExerciseCard({
                             warmupNotes: restored.warmupNotes,
                             warmupSets: restored.warmupSets,
                             setNotes: restored.setNotes,
+                            formDemo: restored.exercise.formDemo ?? null,
                             media: restored.exercise.media ?? null,
                           });
                           setDraft((current) => ({

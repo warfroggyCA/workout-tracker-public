@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { resolveE2EServerHostname } from "./e2e-server-hostname.mjs";
 
+const froggyFormDemo = process.argv.includes("--froggy-form-demo");
 const production = process.argv.includes("--production");
 const baFixture = process.argv.includes("--ba-fixture");
 const baRoutineChange = process.argv.includes("--ba-routine-change");
@@ -183,6 +184,7 @@ const environment = {
   V2_H05_REVIEW_FIXTURE: v2H05Review ? "1" : "",
   DATABASE_URL: "",
   E2E_DEV_LOGIN: "1",
+  FROGGY_FORM_DEMO_PILOT: froggyFormDemo ? "true" : "false",
   MAINTENANCE_SECRET: "local-e2e-maintenance-secret",
   NEXT_TELEMETRY_DISABLED: "1",
   OPENAI_API_KEY: "",
@@ -288,6 +290,8 @@ const fixtures = v2A01AnalysisPackage
       { label: "Empty Today", script: "tests/helpers/seed-today-empty.ts" },
       { label: "Review decision", script: "tests/helpers/seed-review-decisions.ts" },
     ];
+
+if (froggyFormDemo) fixtures.push({ label: "Froggy form demo", script: "tests/helpers/seed-froggy-form-demo.ts" });
 
 for (const fixture of fixtures) {
   const result = spawnSync("npx", ["tsx", fixture.script], {

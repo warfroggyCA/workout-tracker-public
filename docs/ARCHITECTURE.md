@@ -343,6 +343,14 @@ displayed notice and records a separate audit event; it is not a rejection,
 does not snooze a later notice, and changes no Program. If the raw evidence
 still qualifies during a later evaluation, Review can show a fresh notice.
 
+## Optional exercise form viewer
+
+The [Froggy pilot](FROGGY_FORM_DEMO.md) adds a shared, lazily loaded exercise
+viewer to Program cards, active workout cards and exercise picker details.
+The default-off server mapping binds reviewed variant identity to a versioned
+asset and current exercise ID. It is presentation metadata only and never
+changes stored exercise meaning, prescriptions, history or workout timing.
+
 ## Ownership map
 
 - `src/db/schema/` and `src/db/migrations/`: durable schema and additive history
