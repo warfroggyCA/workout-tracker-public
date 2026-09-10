@@ -756,6 +756,15 @@ complete development-tool tree. Any temporary development-only exception is
 bound to exact lockfile nodes, carries a written reason and expiry date, and
 cannot exempt a production dependency finding.
 
+The lockfile includes the security fixes in Next.js 16.3.3 (with matching
+ESLint configuration), csv-parse 7.0.2, Sharp 0.35.4, Vitest/coverage 4.1.11,
+js-yaml 4.3.2 and the development-only Hono dependency. Keep these fixes when
+refreshing dependencies. The [csv-parse changelog](https://github.com/adaltas/node-csv/blob/master/packages/csv-parse/CHANGELOG.md)
+confirms that its 7.0 release introduced no breaking API changes; Hevy imports retain explicit headers and
+untrimmed field parsing. Dependency updates still require import/portability,
+application build and browser regression checks; they do not authorize a data
+migration or a new audit exception.
+
 ## Persisted-data checks
 
 ```bash
