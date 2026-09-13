@@ -251,6 +251,8 @@ form/safety notes and previous-performance evidence remain available through
 labelled disclosures; active blocking, pain and save-recovery notices remain
 outside them. Superset membership is labelled once per exercise header and the
 next-exercise line uses the same immutable occurrence projection.
+At enlarged text sizes, revealing the current action prioritizes its measured
+inputs and the fixed Log control; secondary history can require scrolling.
 
 For plate-aware manual entry, Normal steps aim for at least 5 lb or 2.5 kg,
 selecting the next achievable load in that direction or the reachable endpoint.
