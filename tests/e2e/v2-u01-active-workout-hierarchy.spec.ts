@@ -1016,6 +1016,18 @@ test("fits the complete primary logging action at 390x844 with keyboard disclosu
     expect(geometry.horizontalOverflow).toBeLessThanOrEqual(1);
     await expect(page.getByTestId("active-log-set")).toHaveCount(1);
 
+    const formNotes = currentEntry.locator("details").filter({ hasText: "Form and safety notes" });
+    const formNotesSummary = formNotes.locator(":scope > summary");
+    await expect(formNotes).toHaveCount(1);
+    await expect(formNotes).not.toHaveAttribute("open", "");
+    await expect(formNotes.locator("p")).not.toBeVisible();
+    await formNotesSummary.focus();
+    await page.keyboard.press("Enter");
+    await expect(formNotes.locator("p")).toHaveText("Leave two clean repetitions in reserve.");
+    await expect(formNotes.locator("p")).toBeVisible();
+    await page.keyboard.press("Space");
+    await expect(formNotes).not.toHaveAttribute("open", "");
+
     const exactEffort = currentEntry.getByRole("button", { name: /^(?:Hide )?exact RPE \/ RIR$/i });
     await exactEffort.focus();
     await page.keyboard.press("Enter");
