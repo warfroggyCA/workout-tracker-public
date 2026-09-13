@@ -239,6 +239,29 @@ Rest alerts remain device-local. The ready state is compact and visually
 distinct, while sound and vibration reporting is limited to whether an alert
 was requested, blocked, or unavailable; the application never claims that a
 person heard or felt it.
+The foreground audio check samples the render clock as well as context state.
+A stalled running clock receives one bounded, shared suspend/resume attempt;
+failed recovery remains blocked until progress is observed. Tone nodes have a
+wall-time expiry and are disconnected when the page hides or a new set-log
+gesture begins, preventing an old queued alarm from playing on later recovery.
+The durable deadline and existing one-completion claim remain authoritative.
+
+Active-set entry keeps weight, reps and common RPE choices direct. Complete
+form/safety notes and previous-performance evidence remain available through
+labelled disclosures; active blocking, pain and save-recovery notices remain
+outside them. Superset membership is labelled once per exercise header and the
+next-exercise line uses the same immutable occurrence projection.
+At enlarged text sizes, revealing the current action prioritizes its measured
+inputs and the fixed Log control; secondary history can require scrolling.
+
+For plate-aware manual entry, Normal steps aim for at least 5 lb or 2.5 kg,
+selecting the next achievable load in that direction or the reachable endpoint.
+Fine steps select the adjacent achievable load. The mode chooser appears only
+when owned loadable plate pairs offer smaller steps. Direct entry remains
+available, changing mode does not change the value, and the choice is local to
+the entry control. Inventory, progression, units and recorded load meaning do
+not change. The running rest surface uses a dark background with light text
+and labelled touch controls.
 
 ## Product-polish hierarchy contract
 

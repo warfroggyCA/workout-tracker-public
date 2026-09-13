@@ -340,7 +340,7 @@ test("publishes and preserves durable warm-up and grouped workout outcomes", asy
     "true",
   );
   await expect(workoutGuidance).not.toContainText("Next:");
-  await expect(nextSet).toContainText("Next action");
+  await expect(nextSet.getByText("Next", { exact: true })).toBeVisible();
   await expect(nextSet).toContainText("Romanian Deadlift");
   await page.getByTestId("active-log-set").click();
   await expect(alternatives).toHaveCount(0);

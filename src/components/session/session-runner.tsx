@@ -167,6 +167,7 @@ import {
   planRestCueTransition,
   playRestTonePattern,
   prepareRestAudioContext,
+  cancelRestTonePatterns,
   resumeRestAudioContext,
   readRestAlertPreference,
   REST_COMPLETION_TONE_PATTERN,
@@ -178,6 +179,7 @@ import {
   subscribeToRestAlertPreference,
   type RestAlertPreference,
 } from "@/lib/rest-alert-preference";
+import { ensureRestAudioProgress } from "@/lib/rest-audio-health";
 import {
   formatSessionGuidanceAction,
   projectSessionGuidance,
@@ -2215,6 +2217,7 @@ export function SessionRunner(props: SessionRunnerProps) {
   useEffect(
     () => () => {
       const context = audioContextRef.current;
+      cancelRestTonePatterns(context);
       if (context && context.state !== "closed") void context.close();
     },
     []
@@ -2785,6 +2788,7 @@ export function SessionRunner(props: SessionRunnerProps) {
   }, [props.ownerId, props.sessionId, refreshRestTimer]);
 
   const primeRestCue = useCallback(() => {
+    cancelRestTonePatterns(audioContextRef.current);
     const preference = readRestAlertPreference(window.localStorage);
     if (!requestedRestCueChannels(preference).sound) {
       setRestSoundState("not_requested");
@@ -2840,6 +2844,7 @@ export function SessionRunner(props: SessionRunnerProps) {
   }
 
   const skipRest = useCallback(() => {
+    cancelRestTonePatterns(audioContextRef.current);
     if (!timer) return;
     void transitionRestTimer(timer.generationId, "end");
   }, [timer, transitionRestTimer]);
@@ -2865,7 +2870,7 @@ export function SessionRunner(props: SessionRunnerProps) {
         audioWindow.AudioContext ?? audioWindow.webkitAudioContext,
       );
       const context = audioContextRef.current;
-      if (context?.state === "running") {
+      if (context?.state === "running" && !audioCueBlockedRef.current) {
         try {
           if (milestone === "complete") {
             playRestTonePattern(context, REST_COMPLETION_TONE_PATTERN);
@@ -2937,7 +2942,7 @@ export function SessionRunner(props: SessionRunnerProps) {
   const ensureRestAudio = useCallback(async (preference: RestAlertPreference) => {
     if (!requestedRestCueChannels(preference).sound) return;
     const context = audioContextRef.current;
-    const running = await resumeRestAudioContext(context);
+    const running = await ensureRestAudioProgress(context);
     if (audioContextRef.current !== context) return;
     audioCueBlockedRef.current = !running;
     setRestSoundState(running ? "requested" : "blocked");
@@ -2947,6 +2952,8 @@ export function SessionRunner(props: SessionRunnerProps) {
     const resumeAudio = () => {
       if (document.visibilityState === "visible") {
         void ensureRestAudio(readRestAlertPreference(window.localStorage));
+      } else {
+        cancelRestTonePatterns(audioContextRef.current);
       }
     };
     document.addEventListener("visibilitychange", resumeAudio);
@@ -3006,8 +3013,8 @@ export function SessionRunner(props: SessionRunnerProps) {
     ) => {
       if (disposed || tickInFlight) return;
       tickInFlight = true;
-      const now = Date.now();
-      const currentRemainingSec = remainingRestSeconds(timer, now);
+      let now = Date.now();
+      let currentRemainingSec = remainingRestSeconds(timer, now);
       const previousRemainingSec = previousRestRemainingRef.current ??
         Math.max(currentRemainingSec, timer.totalSec);
       const preference = readRestAlertPreference(window.localStorage);
@@ -3027,7 +3034,7 @@ export function SessionRunner(props: SessionRunnerProps) {
         tenSecondMilestoneDue: plan.milestonesToAttempt.includes("10"),
       });
       try {
-        if (foreground && audioContextRef.current?.state !== "running") {
+        if (foreground) {
           await ensureRestAudio(preference);
           if (disposed) return;
           if (document.visibilityState !== "visible") {
@@ -3035,9 +3042,12 @@ export function SessionRunner(props: SessionRunnerProps) {
             return;
           }
         }
-        if (countdownCueKey != null) {
+        const sampledRemainingSec = currentRemainingSec;
+        now = Date.now();
+        currentRemainingSec = remainingRestSeconds(timer, now);
+        if (countdownCueKey != null && sampledRemainingSec === currentRemainingSec) {
           const context = audioContextRef.current;
-          if (context?.state === "running") {
+          if (context?.state === "running" && !audioCueBlockedRef.current) {
             try {
               playRestTonePattern(context, REST_COUNTDOWN_TICK_PATTERN);
               lastRestCountdownCueRef.current = countdownCueKey;
@@ -5019,7 +5029,9 @@ export function SessionRunner(props: SessionRunnerProps) {
               guidance.currentAction?.kind === "working_set" &&
               guidance.currentAction.sessionExerciseId === exercise.id
                 ? guidance.nextAction
-                  ? formatSessionGuidanceAction(guidance.nextAction)
+                  ? guidance.nextAction.kind === "working_set"
+                    ? `${guidance.nextAction.actualExerciseName} · ${guidance.nextAction.position.lowercaseLabel}`
+                    : formatSessionGuidanceAction(guidance.nextAction)
                   : "No further unresolved work"
                 : null
             }

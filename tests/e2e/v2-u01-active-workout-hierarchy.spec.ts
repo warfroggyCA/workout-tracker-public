@@ -694,6 +694,8 @@ async function compactGeometry(page: Page) {
           summary: details.querySelector("summary")?.textContent?.trim() ?? "",
           summaryHeight:
             details.querySelector("summary")?.getBoundingClientRect().height ?? 0,
+          verticalInsets: (["paddingTop", "paddingBottom", "borderTopWidth", "borderBottomWidth"] as const)
+            .reduce((sum, property) => sum + parseFloat(getComputedStyle(details)[property] || "0"), 0),
           open: details.open,
           height: details.getBoundingClientRect().height,
         }),
@@ -959,7 +961,7 @@ test("fits the complete primary logging action at 390x844 with keyboard disclosu
         );
         return {
           state: element.getAttribute("data-comparison-state"),
-          text: element.textContent?.trim() ?? "",
+          text: element.querySelector("p")?.textContent?.trim() ?? "",
           sourceCount: sourceLinks.length,
           href: sourceLinks[0]?.getAttribute("href") ?? null,
         };
@@ -1006,13 +1008,25 @@ test("fits the complete primary logging action at 390x844 with keyboard disclosu
     expect(geometry.disclosures.every((item) => !item.open)).toBe(true);
     expect(
       geometry.disclosures.every(
-        (item) => item.height <= item.summaryHeight + 2,
+        (item) => item.height <= item.summaryHeight + item.verticalInsets + 2,
       ),
       JSON.stringify(geometry.disclosures),
     ).toBe(true);
     expect(geometry.minimumInputWidth).toBeGreaterThanOrEqual(44);
     expect(geometry.horizontalOverflow).toBeLessThanOrEqual(1);
     await expect(page.getByTestId("active-log-set")).toHaveCount(1);
+
+    const formNotes = currentEntry.locator("details").filter({ hasText: "Form and safety notes" });
+    const formNotesSummary = formNotes.locator(":scope > summary");
+    await expect(formNotes).toHaveCount(1);
+    await expect(formNotes).not.toHaveAttribute("open", "");
+    await expect(formNotes.locator("p")).not.toBeVisible();
+    await formNotesSummary.focus();
+    await page.keyboard.press("Enter");
+    await expect(formNotes.locator("p")).toHaveText("Leave two clean repetitions in reserve.");
+    await expect(formNotes.locator("p")).toBeVisible();
+    await page.keyboard.press("Space");
+    await expect(formNotes).not.toHaveAttribute("open", "");
 
     const exactEffort = currentEntry.getByRole("button", { name: /^(?:Hide )?exact RPE \/ RIR$/i });
     await exactEffort.focus();
@@ -1021,6 +1035,14 @@ test("fits the complete primary logging action at 390x844 with keyboard disclosu
     await expect(exactEffort).toBeFocused();
     await page.keyboard.press("Space");
     await expect(currentEntry.getByLabel("RIR (0–10)")).toHaveCount(0);
+
+    const previousSummary = previous.locator(":scope > summary");
+    await previousSummary.focus();
+    await page.keyboard.press("Enter");
+    await expect(previous).toHaveAttribute("open", "");
+    await expect(previous.locator("p").first()).toBeVisible();
+    await page.keyboard.press("Space");
+    await expect(previous).not.toHaveAttribute("open", "");
 
     const exerciseDetails = currentCard.getByTestId("active-exercise-details");
     const exerciseDetailsSummary = exerciseDetails.locator(":scope > summary");
@@ -1071,6 +1093,8 @@ test("fits the complete primary logging action at 390x844 with keyboard disclosu
     await expect(page.getByTestId("active-workout-dock-primary")).toHaveCount(0);
     await expect(currentSetDockAction(page)).toHaveCount(0);
     let extraLargeGeometry = await compactGeometry(page);
+    // At enlarged text, the current measurements and fixed Log action take
+    // priority; the closed secondary history disclosure can sit below them.
     await expect(async () => {
       extraLargeGeometry = await compactGeometry(page);
       expect(
@@ -1079,7 +1103,6 @@ test("fits the complete primary logging action at 390x844 with keyboard disclosu
       ).toMatchObject({
         targetBeforeInput: true,
         inputBeforePrevious: true,
-        previousBeforeLog: true,
         inputBeforeLog: true,
         logInsideDock: true,
       });
@@ -1091,7 +1114,7 @@ test("fits the complete primary logging action at 390x844 with keyboard disclosu
     expect(extraLargeGeometry.disclosures.every((item) => !item.open)).toBe(true);
     expect(
       extraLargeGeometry.disclosures.every(
-        (item) => item.height <= item.summaryHeight + 2,
+        (item) => item.height <= item.summaryHeight + item.verticalInsets + 2,
       ),
       JSON.stringify(extraLargeGeometry.disclosures),
     ).toBe(true);
