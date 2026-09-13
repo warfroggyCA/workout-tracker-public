@@ -50,7 +50,7 @@ export function RestCockpit({
       )}
     >
       {onEnableSound && (
-        <Button type="button" variant="outline" size="sm" className="mb-1 min-h-11 w-full" onClick={onEnableSound}>
+        <Button type="button" variant="outline" size="sm" className="mb-1 min-h-11 w-full text-foreground" onClick={onEnableSound}>
           Enable and test sound
         </Button>
       )}
