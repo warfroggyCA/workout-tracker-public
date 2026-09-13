@@ -160,3 +160,11 @@ and additional exercises remain separate work.
 
 See [the local pilot review](FROGGY_FORM_DEMO_QA.md) for observed checks and
 explicit coverage limits.
+
+## Cue playback
+
+Do/Avoid guidance advances from presented video-frame wraps using each clip's
+actual duration. Loop detection does not depend on a six-second clip or the
+browser's seeking flag during automatic looping. Manual scrubbing, mode changes
+and viewer remounts reset the playback sample without treating a seek as a rep.
+The existing guidance order, media and paused state remain authoritative.

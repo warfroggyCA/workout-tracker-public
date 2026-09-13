@@ -165,6 +165,12 @@ test("keeps confirmed equipment out of the common path while preserving current-
   await expect(visibleEquipmentSetup).toHaveCount(0);
 
   await page.setViewportSize({ width: 390, height: 844 });
+  const weightField = currentCard.getByRole("textbox", { name: "Total load", exact: true });
+  await weightField.fill("115.5");
+  // Fractional loads must remain readable between accessible 44px controls.
+  const weightFieldBox = await weightField.boundingBox();
+  expect(weightFieldBox?.width ?? 0).toBeGreaterThanOrEqual(100);
+  await expect(weightField).toHaveValue("115.5");
   const defaultLog = page.getByTestId("active-log-set");
   const defaultLogBox = await defaultLog.boundingBox();
   expect(defaultLogBox?.width ?? 0).toBeGreaterThanOrEqual(44);
@@ -436,6 +442,12 @@ test("presents immutable superset order, truthful progress, and next-member equi
     }),
   }).first();
   const laterMemberToggle = laterMemberCard.getByTestId("exercise-swipe-surface");
+  const previousPerformance = currentCard.getByTestId("previous-comparable-set");
+  await expect(previousPerformance).not.toHaveAttribute("open");
+  await previousPerformance.locator("summary").click();
+  await expect(previousPerformance).toHaveAttribute("open");
+  await previousPerformance.locator("summary").click();
+  await expect(currentCard.getByLabel("Part of a superset")).toHaveCount(1);
   await expect(currentToggle).toHaveAttribute("aria-expanded", "true");
   await expect(laterMemberToggle).toHaveAttribute("aria-expanded", "true");
 
@@ -623,9 +635,9 @@ test("presents immutable superset order, truthful progress, and next-member equi
     /Pallof Press, Set 1/i,
   );
   await expect(advancedGuidance).not.toContainText("Next:");
-  await expect(currentCard).toContainText("Next action");
+  await expect(currentCard.getByText("Next", { exact: true })).toBeVisible();
   await expect(currentCard).toContainText(
-    "Superset, round 2, member 1 of 2: Dumbbell Lateral Raise, set 2",
+    "Dumbbell Lateral Raise · set 2",
   );
   await expect(
     page.getByRole("button", { name: "Open unsaved workout changes" }),

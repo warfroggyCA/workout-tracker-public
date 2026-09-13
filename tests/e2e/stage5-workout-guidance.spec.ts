@@ -274,8 +274,8 @@ test("keeps Stage 5 guidance truthful, persistent, and usable on narrow mobile s
     .toHaveAttribute("aria-label", "Romanian Deadlift, Set 1");
   await expect(guidance).not.toContainText("Now:");
   await expect(guidance).not.toContainText("Next:");
-  await expect(dock).toContainText("Next action");
-  await expect(dock).toContainText("Romanian Deadlift, set 2");
+  await expect(dock.getByText("Next", { exact: true })).toBeVisible();
+  await expect(dock).toContainText("Romanian Deadlift · set 2");
 
   let releaseSave!: () => void;
   const saveMayFinish = new Promise<void>((resolve) => {
@@ -619,9 +619,9 @@ test("keeps Stage 5 guidance truthful, persistent, and usable on narrow mobile s
   });
   await expect(groupGuidance).not.toContainText("Next:");
   await expect(groupGuidance).not.toContainText("Now:");
-  await expect(groupDock).toContainText("Next action");
+  await expect(groupDock.getByText("Next", { exact: true })).toBeVisible();
   await expect(groupDock).toContainText(
-    "Superset, round 1, member 2 of 2: Pallof Press, set 1",
+    "Pallof Press · set 1",
   );
   await expect(groupDock.getByTestId("active-workout-primary"))
     .toHaveAttribute("aria-label", "Dumbbell Lateral Raise, Set 1");
@@ -638,7 +638,7 @@ test("keeps Stage 5 guidance truthful, persistent, and usable on narrow mobile s
   await expect(durableGroupGuidance).not.toContainText("Next:");
   await expect(durableGroupGuidance).not.toContainText("Now:");
   await expect(page.getByTestId("current-exercise-card")).toContainText(
-    "Superset, round 1, member 2 of 2: Pallof Press, set 1",
+    "Pallof Press · set 1",
   );
   await expect(page.getByTestId("active-workout-primary"))
     .toHaveAttribute("aria-label", "Dumbbell Lateral Raise, Set 1");

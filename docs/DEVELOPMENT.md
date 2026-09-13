@@ -936,3 +936,21 @@ See [the muscle-map contract](PROGRAM_MUSCLE_MAP.md#verification) for focused
 calculation/database checks and the signed-in desktop/mobile workflow using the
 existing disposable Froggy fixture. This feature requires no migration or seed
 change in a live environment.
+
+## Workout entry and media regression checks
+
+`tests/unit/workout-field-fixes.test.ts` covers variable-duration media loops,
+fractional versus ordinary load entry, loadable bounds, stalled audio clocks,
+bounded recovery, and queued-tone expiry. Run it with the existing rest-audio,
+rest-timer, plate-math, active-set-ledger and workout-status-bar tests. The
+superset-preparation browser suite covers immutable ordering, fractional-load
+readability and set delivery. `npm run test:e2e:workout-field-fixes` uses the
+disposable Froggy fixture to verify all 21 previews naturally reach Avoid and
+return to Do in Chromium and WebKit, plus phone-sized pause/resume behavior.
+
+Browser checks must include direct weight entry, switching adjustment size
+without changing the draft, expanded form/history details, enlarged text,
+normal and reduced-motion playback, and timers after viewing media. A running
+audio clock or a requested tone is not proof of physical audibility. Physical
+phone acceptance still requires repeated foreground timers and interruption /
+return trials, with late or duplicate rings reported separately.

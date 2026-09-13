@@ -7,6 +7,7 @@ import type { FroggyDemoKey } from "@/lib/froggy-form-demo";
 import { FROGGY_FORMS, type FroggyMode } from "@/lib/froggy-form-config";
 import curlFrames from "@/lib/froggy-incline-curl-anchors.json";
 import styles from "./froggy-form-player.module.css";
+import { froggyPlaybackWrapped } from "@/lib/froggy-playback";
 
 import pressFrames from "@/lib/froggy-incline-press-anchors.json";
 import latFrames from "@/lib/froggy-lat-pulldown-anchors.json";
@@ -63,6 +64,7 @@ export default function FroggyFormPlayer({ demoKey, initialSnapshot, onSnapshot 
   const [cue, setCue] = useState(initial.cue);
   const [userPaused, setUserPaused] = useState(initial.userPaused);
   const pauseIntent = useRef(initial.userPaused);
+  const resetPlaybackSample = useRef(true);
   const syncPlayback = useRef<() => void>(() => {});
   const [hint, setHint] = useState(() => {
     try { return !sessionStorage.getItem("froggy-tap-hint"); } catch { return true; }
@@ -107,10 +109,20 @@ export default function FroggyFormPlayer({ demoKey, initialSnapshot, onSnapshot 
       });
     }
     let callback = 0, raf = 0;
-    const frameCallback: VideoFrameRequestCallback = (_, meta) => {
-      paint(meta.mediaTime); callback = v.requestVideoFrameCallback(frameCallback);
+    const trackPlayback = (time: number) => {
+      if (resetPlaybackSample.current) {
+        if (v.seeking) { paint(time); return; }
+        resetPlaybackSample.current = false;
+      } else if (!v.paused && froggyPlaybackWrapped(lastTime.current, time, v.duration)) {
+        setCue(c => (c + 1) % config.cues.length);
+      }
+      lastTime.current = time;
+      paint(time);
     };
-    const fallback = () => { paint(v.currentTime); raf = requestAnimationFrame(fallback); };
+    const frameCallback: VideoFrameRequestCallback = (_, meta) => {
+      trackPlayback(meta.mediaTime); callback = v.requestVideoFrameCallback(frameCallback);
+    };
+    const fallback = () => { trackPlayback(v.currentTime); raf = requestAnimationFrame(fallback); };
     if (typeof v.requestVideoFrameCallback === "function") callback = v.requestVideoFrameCallback(frameCallback);
     else raf = requestAnimationFrame(fallback);
     const seek = () => paint(v.currentTime);
@@ -148,6 +160,7 @@ export default function FroggyFormPlayer({ demoKey, initialSnapshot, onSnapshot 
   function loadMode(next: Mode) {
     const v = video.current!;
     resumeTime.current = v.currentTime;
+    resetPlaybackSample.current = true;
     v.pause(); setFailed(false); setStatus("Loading video…"); setMode(next);
   }
   function playPause() {
@@ -169,7 +182,7 @@ export default function FroggyFormPlayer({ demoKey, initialSnapshot, onSnapshot 
           onLoadedMetadata={() => {
             const v = video.current!;
             v.currentTime = Math.min(resumeTime.current, Math.max(0, v.duration - .01));
-            lastTime.current = v.currentTime; v.playbackRate = speed;
+            lastTime.current = v.currentTime; resetPlaybackSample.current = true; v.playbackRate = speed;
             setFailed(false); setStatus("Paused");
           }}
           onCanPlay={() => syncPlayback.current()}
@@ -180,8 +193,7 @@ export default function FroggyFormPlayer({ demoKey, initialSnapshot, onSnapshot 
           onError={() => { setFailed(true); setPlaying(false); setStatus("Video unavailable. You can still read the form tips below."); }}
           onTimeUpdate={() => {
             const v = video.current!;
-            if (!v.seeking && !v.paused && lastTime.current > 5.5 && v.currentTime < .5) setCue(c => (c + 1) % config.cues.length);
-            lastTime.current = v.currentTime; setPosition(v.currentTime);
+            setPosition(v.currentTime);
           }} />
         <>
           <div key={cue} data-form-banner={cue} className={`${styles.cue} ${config.floatingCue ? styles.floatingCue : ""} ${current.kind === "AVOID" ? styles.avoid : ""}`}>
@@ -223,7 +235,7 @@ export default function FroggyFormPlayer({ demoKey, initialSnapshot, onSnapshot 
       </div>
       <label className="flex items-center gap-3 text-xs">Position
         <input aria-label="Demonstration position" type="range" min={0} max={6} step={.04} value={position} className="min-h-11 min-w-0 flex-1" disabled={failed}
-          onChange={e => { const t = Number(e.target.value); resumeTime.current = t; lastTime.current = t; video.current!.currentTime = t; setPosition(t); }} />
+          onChange={e => { const t = Number(e.target.value); resetPlaybackSample.current = true; resumeTime.current = t; lastTime.current = t; video.current!.currentTime = t; setPosition(t); }} />
         <span>{position.toFixed(1)} / 6s</span>
       </label>
       </details>

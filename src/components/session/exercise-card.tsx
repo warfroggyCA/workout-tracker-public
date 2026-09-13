@@ -25,12 +25,11 @@ import {
 } from "@/app/actions/sessions";
 import { restoreArchiveOperation } from "@/app/actions/archive";
 import {
-  nextLoadUp,
-  nextLoadDown,
   incrementalLoads,
   type PlateMathConfig,
   type IncrementalLoadConfig,
 } from "@/engine/plate-math";
+import { hasFinePlateSteps, normalLoadStep, stepPlateEntryLoad, type LoadStepMode } from "@/lib/load-entry-step";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ExercisePicker } from "@/components/exercises/exercise-picker";
 import { ExerciseFamilyIcon } from "@/components/exercises/exercise-family-icon";
@@ -1144,13 +1143,11 @@ export function ExerciseCard({
           : "")
       : "no target";
 
-  function stepWeight(current: number | null, dir: 1 | -1): number | null {
-    if (current == null) return dir > 0 ? 5 : null;
+  function stepWeight(current: number | null, dir: 1 | -1, mode: LoadStepMode = "normal"): number | null {
     if (plateConfig) {
-      const next =
-        dir > 0 ? nextLoadUp(current, plateConfig) : nextLoadDown(current, plateConfig);
-      return next?.totalLoad ?? current;
+      return stepPlateEntryLoad(current, dir, plateConfig, unit, mode);
     }
+    if (current == null) return dir > 0 ? 5 : null;
     if (incremental) {
       const loads = incrementalLoads(incremental);
       const idx = loads.findIndex((l) => Math.abs(l - current) < 1e-9);
@@ -1769,11 +1766,12 @@ export function ExerciseCard({
           prioritizePerformedMeasure
           compactLedger
         />
-        <div
+        <details
           data-testid="previous-comparable-set"
           data-comparison-state={rowComparableRenderState}
           className="mt-1 border-t pt-1 text-xs text-muted-foreground"
         >
+          <summary className="min-h-11 cursor-pointer content-center text-sm">Previous performance</summary>
           {rowComparableRenderState === "available" &&
           comparableProjection?.status === "available" &&
           rowPreviousComparableSet ? (
@@ -1831,7 +1829,7 @@ export function ExerciseCard({
           ) : (
             <p>Previous comparison unavailable</p>
           )}
-        </div>
+        </details>
         <div
           className={cn(
             "mt-1 grid gap-2",
@@ -1906,7 +1904,7 @@ export function ExerciseCard({
         />
         {!rowIsAppended && prioritizeCurrentAction && (
           <div className="mt-1 flex min-h-11 items-center gap-2 border-t">
-            <p className="ui-metadata shrink-0">Next action</p>
+            <p className="ui-metadata shrink-0">Next</p>
             <p className="min-w-0 break-words py-2 text-sm">
               {nextActionLabel}
             </p>
@@ -1927,7 +1925,7 @@ export function ExerciseCard({
       className={cn(
         "ui-surface scroll-mt-32 [&_button]:min-h-11 [&_button]:min-w-11 [&_input]:min-h-11",
         exercise.supersetKey &&
-          "ring-2 ring-violet-500/55",
+          "border-l-4 border-l-violet-500/60",
         isSkipped && "border-dashed bg-muted/20"
       )}
       onClickCapture={() => {
@@ -2050,8 +2048,8 @@ export function ExerciseCard({
               ` · instead of ${exercise.plannedExerciseName ?? "planned exercise"}`}
           </p>
           {groupContext && (
-            <p className="mt-1 rounded-md bg-violet-600 px-2 py-1 text-xs font-bold uppercase tracking-[0.08em] text-white">
-              Superset · {groupContext.name} · Exercise {groupContext.memberOrder} of{" "}
+            <p aria-label="Part of a superset" className="mt-1 text-xs font-medium text-violet-800 dark:text-violet-200">
+              {groupContext.name} · Exercise {groupContext.memberOrder} of{" "}
               {groupContext.memberCount}
             </p>
           )}
@@ -2060,7 +2058,7 @@ export function ExerciseCard({
               {exercise.modificationType === "added" && (
                 <Badge variant="outline">Workout only</Badge>
               )}
-              {exercise.supersetKey && (
+              {exercise.supersetKey && !groupContext && (
                 <Badge
                   variant="outline"
                   aria-label="Part of a superset"
@@ -3263,7 +3261,7 @@ function SetEntry({
   draft: SetDraft;
   setDraft: React.Dispatch<React.SetStateAction<SetDraft>>;
   onWeightEdit?: () => void;
-  stepWeight: (current: number | null, dir: 1 | -1) => number | null;
+  stepWeight: (current: number | null, dir: 1 | -1, mode?: LoadStepMode) => number | null;
   unit: string;
   hasWeight: boolean;
   weightLabel?: string;
@@ -3273,6 +3271,8 @@ function SetEntry({
   compactLedger?: boolean;
   optionalOnly?: boolean;
 }) {
+  const [loadStepMode, setLoadStepMode] = useState<LoadStepMode>("normal");
+  const showFineSteps = plateConfig != null && hasFinePlateSteps(plateConfig, unit);
   const weightInputId = useId();
   const distanceInputId = useId();
   const durationInputId = useId();
@@ -3477,9 +3477,7 @@ function SetEntry({
           "active-set-measures-grid grid items-end gap-2",
           (hasWeight && recordsRepetitions) ||
             metricType === "distance_duration"
-            ? compactLedger
-              ? "grid-cols-2"
-              : "grid-cols-1 min-[520px]:grid-cols-2"
+            ? "grid-cols-1 min-[520px]:grid-cols-2"
             : "grid-cols-1 sm:grid-cols-2",
         )}
       >
@@ -3509,7 +3507,7 @@ function SetEntry({
                   onWeightEdit();
                   setDraft((d) => ({
                     ...d,
-                    weight: stepWeight(d.weight, -1),
+                    weight: stepWeight(d.weight, -1, loadStepMode),
                   }));
                 }}
                 aria-label="Decrease weight"
@@ -3559,7 +3557,7 @@ function SetEntry({
                   onWeightEdit();
                   setDraft((d) => ({
                     ...d,
-                    weight: stepWeight(d.weight, 1),
+                    weight: stepWeight(d.weight, 1, loadStepMode),
                   }));
                 }}
                 aria-label="Increase weight"
@@ -3703,6 +3701,17 @@ function SetEntry({
         >
           {machineLine ?? plateLine}
         </p>
+      )}
+      {hasWeight && showFineSteps && (
+        <label className="flex min-h-11 flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          Weight steps
+          <select aria-label="Weight adjustment size" value={loadStepMode}
+            onChange={event => setLoadStepMode(event.target.value as LoadStepMode)}
+            className="min-h-11 rounded-md border bg-background px-2 text-foreground">
+            <option value="normal">Normal · {normalLoadStep(unit)} {unit}</option>
+            <option value="fine">Fine · smallest available</option>
+          </select>
+        </label>
       )}
       <SetEffortInput draft={draft} setDraft={setDraft} />
       {!prioritizePerformedMeasure && (

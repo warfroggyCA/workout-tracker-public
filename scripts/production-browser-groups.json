@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "expectedSuiteCount": 41,
+  "expectedSuiteCount": 42,
   "groups": [
     {
       "name": "baseline-history",
@@ -8,7 +8,8 @@
         "test:e2e",
         "test:e2e:pain-hold",
         "test:e2e:history-calendar",
-        "test:e2e:history-workspace"
+        "test:e2e:history-workspace",
+        "test:e2e:workout-field-fixes"
       ]
     },
     {
