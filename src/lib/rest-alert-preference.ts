@@ -130,16 +130,48 @@ function playRestTone(
   gain.connect(context.destination);
   oscillator.start(startsAt);
   oscillator.stop(startsAt + tone.durationSec);
+  return () => {
+    // Disconnect first: a frozen audio clock must not release old sounds later.
+    oscillator.disconnect();
+    gain.disconnect();
+    try { oscillator.stop(); } catch { /* Already ended. */ }
+  };
+}
+
+const activeRestPatterns = new WeakMap<AudioContext, Set<() => void>>();
+
+export function cancelRestTonePatterns(context: AudioContext | null) {
+  if (context) activeRestPatterns.get(context)?.forEach(cancel => cancel());
 }
 
 export function playRestTonePattern(
   context: AudioContext,
   pattern: readonly RestTone[],
 ) {
+  if (context.state !== "running") return;
   const startsAt = context.currentTime;
-  for (const tone of pattern) {
-    playRestTone(context, tone, startsAt + tone.delaySec);
+  const cleanups: Array<() => void> = [];
+  try {
+    for (const tone of pattern) {
+      cleanups.push(playRestTone(context, tone, startsAt + tone.delaySec));
+    }
+  } catch (error) {
+    cleanups.forEach(cleanup => cleanup());
+    throw error;
   }
+  const active = activeRestPatterns.get(context) ?? new Set<() => void>();
+  activeRestPatterns.set(context, active);
+  const cancel = () => {
+    clearTimeout(timeout);
+    cleanups.forEach(cleanup => cleanup());
+    active.delete(cancel);
+  };
+  // AudioContext time may stop even while state says running. Bound queued
+  // audio by wall time too, so a later focus event cannot play an expired cue.
+  const duration = Math.max(0, ...pattern.map(tone => tone.delaySec + tone.durationSec));
+  const timeout = setTimeout(cancel, duration * 1000 + 250);
+  active.add(cancel);
+  return cancel;
 }
 
 /**
@@ -158,6 +190,7 @@ export function primeRestAudioContext(context: AudioContext) {
   gain.connect(context.destination);
   oscillator.start(startsAt);
   oscillator.stop(startsAt + 0.02);
+  oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
 }
 
 export function prepareRestAudioContext(

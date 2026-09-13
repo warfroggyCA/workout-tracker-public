@@ -286,9 +286,10 @@ function renderExhaustiveRow(
               </p>
             </div>
             {row.prescription.note?.trim() && (
-              <p className="mb-1 break-words text-xs text-muted-foreground">
-                {row.prescription.note.trim()}
-              </p>
+              <details className="mb-1 text-xs text-muted-foreground">
+                <summary className="min-h-11 cursor-pointer content-center">Form and safety notes</summary>
+                <p className="whitespace-pre-line break-words pb-2">{row.prescription.note.trim()}</p>
+              </details>
             )}
             {plannedContent}
           </li>

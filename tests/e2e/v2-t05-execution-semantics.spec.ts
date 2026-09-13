@@ -392,9 +392,9 @@ test("keeps one ledger-driven current/next/group/rest state through retry, inter
   const retryCurrent = page.getByTestId("current-exercise-card");
   await expect(retryCurrent.getByTestId("active-workout-primary"))
     .toHaveAttribute("aria-label", "Pallof Press, Set 1");
-  await expect(retryCurrent).toContainText("Next action");
+  await expect(retryCurrent.getByText("Next", { exact: true })).toBeVisible();
   await expect(retryCurrent).toContainText(
-    "Superset, round 2, member 1 of 2: Dumbbell Lateral Raise, set 2",
+    "Dumbbell Lateral Raise · set 2",
   );
   await expect(guidance).not.toContainText("Now:");
   await expect(guidance).not.toContainText("Next:");

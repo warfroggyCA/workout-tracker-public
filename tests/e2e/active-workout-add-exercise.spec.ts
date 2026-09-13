@@ -174,7 +174,7 @@ test("adds a reviewed workout-only exercise without editing the Program", async 
     await expect(
       page.getByRole("region", { name: "Workout progress and upcoming work" }),
     ).not.toContainText("Next:");
-    await expect(currentCard).toContainText("Next action");
+    await expect(currentCard.getByText("Next", { exact: true })).toBeVisible();
   }
   await expect(
     page.getByRole("complementary", { name: "Workout status" }),

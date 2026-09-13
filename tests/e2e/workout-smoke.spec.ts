@@ -2026,7 +2026,7 @@ test("keeps every active-workout route reachable with one scroll surface", async
   await expect(statusBar.getByRole("button", { name: "Add training note", exact: true })).toBeVisible();
   await expect(statusBar.getByRole("button", { name: /^(?:Review and finish workout|Finish workout)$/ })).toBeVisible();
   await expect(orientation).not.toContainText("Next:");
-  await expect(currentCard).toContainText("Next action");
+  await expect(currentCard.getByText("Next", { exact: true })).toBeVisible();
 
   await expect(currentCard).toContainText(
     "Ask Coach gives guidance. It does not change the exercise.",
