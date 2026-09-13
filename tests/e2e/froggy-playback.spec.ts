@@ -1,6 +1,25 @@
 import { expect, test } from "@playwright/test";
 import { waitForHydratedServerAction } from "../helpers/react-readiness";
 
+test("plays one reduced-motion preview in isolation", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/sign-in");
+  await page.getByPlaceholder("allowlisted email").fill("owner@example.com");
+  const login = page.getByRole("button", { name: "Dev login", exact: true });
+  await waitForHydratedServerAction(login);
+  await login.click();
+  await expect(page).toHaveURL(/\/today$/);
+  await page.goto("/program");
+  await page.getByRole("button", { name: "View Incline Dumbbell Curl form", exact: true }).click();
+  const player = page.getByTestId("froggy-player");
+  await expect.poll(() => player.locator("video").evaluate((v: HTMLVideoElement) => ({
+    readyState: v.readyState, networkState: v.networkState, time: v.currentTime,
+    duration: v.duration, error: v.error?.message ?? null, source: v.currentSrc,
+  })), { timeout: 30_000 }).toMatchObject({ readyState: 4, error: null });
+  await expect(player.locator("video")).toHaveAttribute("src", /steady\.mp4$/);
+  await expect.poll(() => player.locator("[data-form-banner]").innerText(), { timeout: 30_000 }).toMatch(/^AVOID/);
+});
+
 test("cycles every supported form through Avoid and back to Do during natural playback", async ({ page }) => {
   await page.goto("/sign-in");
   await page.getByPlaceholder("allowlisted email").fill("owner@example.com");

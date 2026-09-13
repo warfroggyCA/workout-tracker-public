@@ -947,6 +947,7 @@ superset-preparation browser suite covers immutable ordering, fractional-load
 readability and set delivery. `npm run test:e2e:workout-field-fixes` uses the
 disposable Froggy fixture to verify all 21 previews naturally reach Avoid and
 return to Do in Chromium and WebKit, plus phone-sized pause/resume behavior.
+An isolated reduced-motion case checks metadata-only startup and cue playback.
 
 Browser checks must include direct weight entry, switching adjustment size
 without changing the draft, expanded form/history details, enlarged text,

@@ -130,7 +130,7 @@ export default function FroggyFormPlayer({ demoKey, initialSnapshot, onSnapshot 
     const sync = () => {
       if (disposed) return;
       if (!visible || document.hidden || pauseIntent.current) { v.pause(); return; }
-      if (v.readyState >= 2 && v.paused) void v.play().then(() => {
+      if (v.readyState >= HTMLMediaElement.HAVE_METADATA && v.paused) void v.play().then(() => {
         if (disposed || !visible || document.hidden || pauseIntent.current) v.pause();
       }).catch(() => { if (!disposed && visible && !pauseIntent.current) setStatus("Tap to play"); });
     };
@@ -184,6 +184,9 @@ export default function FroggyFormPlayer({ demoKey, initialSnapshot, onSnapshot 
             v.currentTime = Math.min(resumeTime.current, Math.max(0, v.duration - .01));
             lastTime.current = v.currentTime; resetPlaybackSample.current = true; v.playbackRate = speed;
             setFailed(false); setStatus("Paused");
+            // Metadata-only preload may stop before canplay in WebKit. Start
+            // loading playback here instead of waiting for that later event.
+            syncPlayback.current();
           }}
           onCanPlay={() => syncPlayback.current()}
           onPlay={() => { setPlaying(true); setStatus("Playing"); }}
