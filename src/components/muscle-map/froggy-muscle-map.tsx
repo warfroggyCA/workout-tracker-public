@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import silhouettes from "@/lib/froggy-muscle-silhouettes.json";
 import regions from "@/lib/froggy-muscle-regions.json";
 import {
   directSetColor,
@@ -14,7 +15,9 @@ export function FroggyMuscleMap({
   coverage,
   selected = new Set<string>(),
   onToggle,
+  compact = false,
 }: {
+  compact?: boolean;
   coverage: Record<string, MuscleCoverage>;
   selected?: ReadonlySet<string>;
   onToggle?: (muscle: string) => void;
@@ -28,7 +31,7 @@ export function FroggyMuscleMap({
     onToggle?.(muscle);
   }
   return (
-    <div className={styles.figures}>
+    <div className={compact ? styles.compactFigures : styles.figures}>
       {(["front", "back"] as const).map((view) => {
         const x = view === "front" ? 40 : 1380;
         const shapes = regions[view].flatMap((region) =>
@@ -45,10 +48,26 @@ export function FroggyMuscleMap({
               role="group"
             >
               <defs>
+                <radialGradient id={`${id}-${view}-ground`}>
+                  <stop offset="0" stopColor="#233646" stopOpacity="0.22" />
+                  <stop offset="0.5" stopColor="#233646" stopOpacity="0.1" />
+                  <stop offset="1" stopColor="#233646" stopOpacity="0" />
+                </radialGradient>
                 <clipPath id={`${id}-${view}`}>
-                  <rect x={x} y={65} width={345} height={725} />
+                  <path d={silhouettes[view]} />
                 </clipPath>
               </defs>
+              {!compact && (
+                <ellipse
+                  cx={x + 172}
+                  cy={769}
+                  rx={148}
+                  ry={17}
+                  fill={`url(#${id}-${view}-ground)`}
+                  aria-hidden="true"
+                  pointerEvents="none"
+                />
+              )}
               <g clipPath={`url(#${id}-${view})`}>
                 <image
                   href="/muscle-map/froggy-mannequin-v1.jpg"
@@ -85,10 +104,11 @@ export function FroggyMuscleMap({
                           : undefined
                       }
                       onPointerEnter={(e) => {
-                        if (e.pointerType === "mouse") setHover(region.muscle);
+                        if (onToggle && e.pointerType === "mouse")
+                          setHover(region.muscle);
                       }}
                       onPointerLeave={() => setHover(null)}
-                      onFocus={() => setHover(region.muscle)}
+                      onFocus={() => onToggle && setHover(region.muscle)}
                       onBlur={() => setHover(null)}
                       fill={
                         count > 0
@@ -128,31 +148,30 @@ export function FroggyMuscleMap({
                       </g>
                     ))}
                 </g>
-                <g
-                  aria-hidden="true"
-                  pointerEvents="none"
-                  className={styles.setNumbers}
-                >
-                  {regions[view].map((region) => {
-                    const count = coverage[region.muscle]?.direct ?? 0;
-                    if (count <= 0) return null;
-                    return (
-                      <text
-                        key={region.muscle}
-                        x={region.label[0]}
-                        y={region.label[1]}
-                        data-set-number={region.muscle}
-                        textAnchor="middle"
-                        dominantBaseline="central"
-                      >
-                        {count}
-                      </text>
-                    );
-                  })}
-                </g>
+              </g>
+              <g
+                aria-hidden="true"
+                pointerEvents="none"
+                className={styles.setNumbers}
+              >
+                {regions[view].map((region) => {
+                  const count = coverage[region.muscle]?.direct ?? 0;
+                  if (compact || count <= 0) return null;
+                  return (
+                    <text
+                      key={region.muscle}
+                      x={region.label[0]}
+                      y={region.label[1]}
+                      data-set-number={region.muscle}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                    >
+                      {count}
+                    </text>
+                  );
+                })}
               </g>
             </svg>
-            <figcaption>{view === "front" ? "Front" : "Back"}</figcaption>
           </figure>
         );
       })}
