@@ -486,23 +486,34 @@ test("workout feedback: direct RPE, immediate extra-set rest, and interrupted au
     const state = { contexts: [] as Array<{ state: string }>, loudTones: 0 };
     Object.assign(window, { feedbackAudio: state });
     class Audio {
-      state = "running";
-      currentTime = 0;
+      private clockState = "running";
+      private elapsed = 0;
+      private resumedAt = performance.now();
+      get state() { return this.clockState; }
+      set state(value: string) {
+        this.elapsed = this.currentTime;
+        this.clockState = value;
+        this.resumedAt = performance.now();
+      }
+      get currentTime() {
+        return this.elapsed + (this.state === "running" ? (performance.now() - this.resumedAt) / 1_000 : 0);
+      }
       destination = {};
       constructor() { state.contexts.push(this); }
       async resume() {
         await new Promise((resolve) => setTimeout(resolve, 150));
         this.state = "running";
       }
+      async suspend() { this.state = "suspended"; }
       async close() { this.state = "closed"; }
       createGain() {
         return { gain: {
           setValueAtTime() {},
           exponentialRampToValueAtTime(value: number) { if (value > 0.4) state.loudTones += 1; },
-        }, connect() {} };
+        }, connect() {}, disconnect() {} };
       }
       createOscillator() {
-        return { frequency: { setValueAtTime() {} }, connect() {}, start() {}, stop() {} };
+        return { frequency: { setValueAtTime() {} }, connect() {}, disconnect() {}, start() {}, stop() {} };
       }
     }
     Object.assign(window, { AudioContext: Audio });

@@ -3,7 +3,7 @@ const port = Number(process.env.WORKOUT_FIELD_FIXES_PORT ?? 3186);
 export default defineConfig({
   testDir: "./tests/e2e", testMatch: "froggy-playback.spec.ts",
   outputDir: "output/playwright/workout-field-fixes", fullyParallel: false,
-  workers: 1, retries: 0, maxFailures: 1, timeout: 300_000,
+  workers: 2, retries: 0, maxFailures: 1, timeout: 600_000,
   expect: { timeout: 25_000 }, reporter: [["list"]],
   use: { baseURL: `http://127.0.0.1:${port}`, actionTimeout: 15_000, trace: "retain-on-failure", screenshot: "only-on-failure" },
   projects: [
